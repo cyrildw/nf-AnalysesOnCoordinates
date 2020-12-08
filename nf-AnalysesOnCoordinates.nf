@@ -19,7 +19,7 @@ Channel
                     row.LibIsControl,
                     row.LibControl ]
                     }
-   .into { design_bigwig_csv; testbw_ch; ch_control_bam; ch_sample_bam }
+   .into { design_bigwig_csv; test1_ch}
 
 Channel
     .fromPath(params.bed_design)
@@ -45,20 +45,20 @@ testbed_ch
     applying array modification (.map)
     grouping per "LibIsControl"
     setting into new channel */
-ch_control_bam
+/*ch_control_bam
     .filter { it[14] != "" && it[15] == "" }
     .map { it -> [ it[14], it[0],it[1], it[2]]}
     .groupTuple(by: 0)
     .set { ch_macs2_control_bam } 
-
+*/
 /* Filtering out files that are control datasets
     applying same organization as ch_macs2_control_bam
     setting into new channel */
-ch_sample_bam
+/*ch_sample_bam
     .filter { it[14] == "" && it[15] != "" } // && it[15].ifEmpty()
     .map { it -> [ it[15], it[0], it[1], it[2] ] } //.view()
     .set { ch_macs2_sample_bam }
-
+*/
 
 /* Crossing  control_bam channel with sample_bam channel
     outputs one group of value per association
@@ -71,38 +71,225 @@ Cross     control.sample => 2 output [array control, array sample] GOOD !
 Combine   control.sample => 4 output not matching
 Join      control.sample => 1 output */
 
- ch_macs2_control_bam
+ /*ch_macs2_control_bam
    .cross(ch_macs2_sample_bam)
    .set { ch_macs2_run }
+ */
    //.map {it.flatten()}
    //.view()
    /*.transpose().map{ it -> [it[1]]}.view()
   .map { it.flatten() }
    .map { it -> [ it[1], it[2], it[-1] ] }.view()
    */
+/* Macs analyses contains : 
+    -Channel split as control or sample
+    -Channel cross to have sample & control on same channel emission
+    -Macs2 peak calling
+    -Add new peaks to the bed files to analyse
+    -Merge peaks within a w-nt window size
+    -Group peaks with
+        - 10% most enriched
+        - 50% most enriched
 
+if($params.macs2_analyses){
 
-process macs2_run {
-    label 'local'
-    echo true
-    input:
-    tuple CtrlArray, SampleArray from ch_macs2_run
-    output:
-    stdout into toto_ch
-    script:
-    def CtrlBam=CtrlArray[2]
-    def SampleBam=SampleArray[2]
-    def SampleName=SampleArray[1]
-    """
-    echo "macs2 callpeak \\
-        -t ${SampleBam} \\
-        -c ${CtrlBam.join(' ')} \\
-        -g '${params.macs2_genome}' \\
-        -f BAMPE \\
-        --outdir $
-        -n ${SampleName}"
-    """
+    process macs2_run {
+        label 'local'
+        echo true
+        input:
+        tuple CtrlArray, SampleArray from ch_macs2_run
+        output:
+        stdout into toto_ch
+        script:
+        def CtrlBam=CtrlArray[2]
+        def SampleBam=SampleArray[2]
+        def SampleName=SampleArray[1]
+        """
+        echo "macs2 callpeak \\
+            -t ${SampleBam} \\
+            -c ${CtrlBam.join(' ')} \\
+            -g '${params.macs2_genome}' \\
+            -f BAMPE \\
+            --outdir $
+            -n ${SampleName}"
+        """
+    }
 }
+*/
+/*Deeptools analyses contains :
+- MultiBigwigSymmary & PlotCorrelation
+    -Should plot correlation & Scatterplot
+    -see for --removeOutliers
+- ComputeMatrix & PlotHeatmap
+    -For ComputeMatrix
+        -generate bedfiles from groups
+        -take scale-region/reference-point into account.
+
+    -For PlotHeatmap: 
+        -account for plotType (lines, fill, se, std)
+        --linesAtTickMarks ?
+
+*/
+test1_ch.map {it -> [ it[0], it[3]]}
+.transpose()
+.view()
+/*if($params.deeptools_analyses){
+    process dt_MultiBWsummary {
+        tag "$BedName"
+        label "multiCpu"
+        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.npz')) "./$filename"
+            else null
+        }
+        input:
+        data from bed_channel
+        libs from lib_channel
+        output:
+        "dt_MultiBWsummary.Matix.${BedName}.npz" into multibw_matrix
+        script:
+        """
+        multiBigwigSummary BED-file \
+        -b Array with bigwigs \
+        -o dt_MultiBWsummary.Matrix.${BedName}.npz \
+        --BED ${BedFile} \
+        --numberOfProcessors ${task.cpus}
+        """
+    }
+    process dt_PlotCorrelation {
+        tag "$BedName"
+        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.tab')) "./DeeptoolsData/$filename"
+            else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
+            else null
+        }
+        input:
+        matrix from multibw_matrix
+        labels from lib_channel_labels
+        output:
+        "dt_MultiBWsummary.CorTable.${BedName}.tab"
+        "Heatmap.dt_MultiBWsummary.${BedName}.pdf"
+        script:
+        """
+        plotCorrelation \
+        --corData ${matrix} \
+        --corMethod spearman \
+        --whatToPlot heatmap \
+        --plotNumbers \
+        --outFileCorMatrix dt_MultiBWsummary.CorTable.${BedName}.tab \
+        -o Heatmap.dt_MultiBWsummary.${BedName}.pdf \
+        --plotTitle ${BedName} \
+        --labels array with labels
+        """
+    }
+    // Adujst for reference point
+    
+    process dt_ComputeMatrix {
+        tag "$BedName"
+        label "multiCpu"
+        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.gz')) "./$filename"
+            else null
+        }
+        input:
+        output:
+        script:
+        """
+        computeMatrix scale-regions \
+        -S Array with bigwig files \
+        -R ${BedFile} \
+        -b amount of nt before \
+        -a amount of nt after \
+        -m size of the middle region \
+        --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.${BedName}.gz
+        """
+    }
+    // Adjust for :
+    //    - groups
+    //    - kmean
+    
+    
+    process dt_PlotHeatmap {
+        tag "$BedName"
+        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
+            else null
+        }
+        input:
+        matrix from computMatrix_ch
+        output:
+        "Heatmap.dt_PlotHeatmap.${BedName}.pdf"
+        script:
+        """
+        plotHeatmap \
+        --matrixFile ${matrix} \
+        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
+        --startLabel '1' \
+        --endLabel '0'
+        --yMin 0 \
+        --xAxisLabel ${BedName} \
+        --samplesLabel Array with Labels
+        """
+    }
+}
+*/
+
+/*R analyses includes : 
+- Combine all libraries with all bedfiles
+- Getting Tag Density over the bed files
+- Converting all density tables to R object with scaling
+- Producing combined graphics for
+    -all elements
+    -grouped elements
+    -quantiles
+- Outputing R objects (and R scripts ?)
+
+if($params.r_analyses){
+    process tag_density {
+        tag "$LibName"
+        input:
+        combinedLib_and_Bed from some_channel
+        file(r_scaling_function.R) from ${params.r_scaling}
+        output:
+        file(temp_file)
+        file("r_file_2_run.R")
+        file("${LibName}.${BedName}.R")
+        
+        script:
+        """
+        get_tag_density -f ${BwFile} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
+        echo "#!/usr/bin/env Rscript
+        source ${r_scaling_function.R}
+        finalL=${BedFinalLength}
+        ext=${BedExtension}
+        extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
+        extVL=${BedExtValLeft};extVR=${BedExtValRight};
+        t=as.list(read.table(temp_file, stringsAsFactor=FALSE, header=FALSE))
+        names(t)=c('Q_id', 'Strand', 'PerBP')
+        t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
+        for(k in 1:length(t[['Strand']])){ 
+            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[["Splt_PerBP"]][[k]])            }
+        } # Reversing order for minus strand
+        t_scaled=c()
+        t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
+        colnames(t_scaled)=t[['Q_id']]
+        save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
+        R --vanilla r_file_2_run.R
+        """
+    }
+
+    /* Must get all bed-associated R file (containing data)
+    process combine_R {
+
+    }
+
+}
+*/
 /*
 testbw_ch
     .map { it -> [ name:it[0], name:it[1] ]}
