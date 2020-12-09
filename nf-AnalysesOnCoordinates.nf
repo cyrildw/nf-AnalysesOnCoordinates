@@ -19,7 +19,7 @@ Channel
                     row.LibIsControl,
                     row.LibControl ]
                     }
-   .into { design_bigwig_csv; test1_ch}
+   .into { design_bigwig_csv; ch_before_dt_lib.map}
 
 Channel
     .fromPath(params.bed_design)
@@ -130,7 +130,12 @@ if($params.macs2_analyses){
         --linesAtTickMarks ?
 
 */
-test1_ch.map {it -> [ label:it[0], file:it[3]]}
+ch_before_dt_lib.map {it -> [ it[0], it[3]]}
+.multiMap { it ->
+            labels: it[0]
+            files: it[1]
+        }
+.set{ch_dt_labels_and_files}
 .view()
 /*if($params.deeptools_analyses){
     process dt_MultiBWsummary {
