@@ -96,8 +96,8 @@ process toto {
     tag "$BedName"
     echo true
     input:
-    list(Labels) from ch_dt_labels
-    list(Files) from ch_dt_files
+    val Labels from ch_dt_labels
+    val Files from ch_dt_files
     tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv
     """
     echo ${BedName} \\n ${BedFile} \\n ${Labels} \\n ${Files}
