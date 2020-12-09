@@ -100,7 +100,7 @@ process toto {
     val Files from ch_dt_files
     tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv
     """
-    echo ${BedName} \\n ${BedFile} \\n ${Labels} \\n ${Files}
+    echo ${BedName} \\n ${BedFile} \\n ${Labels.join(' ')} \\n ${Files.join(' ')}
     """
 }
 
