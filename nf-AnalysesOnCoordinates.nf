@@ -97,7 +97,7 @@ process toto {
     input:
     labels from ch_dt_input.labels.collect()
     files from ch_dt_input.files.collect()
-    tuple BedName, file(BedFile), BedPref, BedFls BedExts, BedExtls, BedExtvs design_bed_csv
+    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs design_bed_csv
     """
     echo ${BedName} \\n ${BedFile} \\n ${labels} \\n ${files}
     """
