@@ -33,54 +33,6 @@ Channel
 		row.BedExtvs ]
         }
     .into { design_bed_csv; testbed_ch }
-
-/* Combine works to have a channel with both Bed & Bw
-testbed_ch
-    .combine(testbw_ch)
-    .view()
-
-*/
-
-/* Filtering files that are not control datasets
-    applying array modification (.map)
-    grouping per "LibIsControl"
-    setting into new channel */
-/*ch_control_bam
-    .filter { it[14] != "" && it[15] == "" }
-    .map { it -> [ it[14], it[0],it[1], it[2]]}
-    .groupTuple(by: 0)
-    .set { ch_macs2_control_bam } 
-*/
-/* Filtering out files that are control datasets
-    applying same organization as ch_macs2_control_bam
-    setting into new channel */
-/*ch_sample_bam
-    .filter { it[14] == "" && it[15] != "" } // && it[15].ifEmpty()
-    .map { it -> [ it[15], it[0], it[1], it[2] ] } //.view()
-    .set { ch_macs2_sample_bam }
-*/
-
-/* Crossing  control_bam channel with sample_bam channel
-    outputs one group of value per association
-    - CTRL1 with ChIP1a
-    - CRTL1 with ChIP1b
-    - CTRL2 with ChIP2*/
-/*
-Cross     sample.control => 1 output
-Cross     control.sample => 2 output [array control, array sample] GOOD !
-Combine   control.sample => 4 output not matching
-Join      control.sample => 1 output */
-
- /*ch_macs2_control_bam
-   .cross(ch_macs2_sample_bam)
-   .set { ch_macs2_run }
- */
-   //.map {it.flatten()}
-   //.view()
-   /*.transpose().map{ it -> [it[1]]}.view()
-  .map { it.flatten() }
-   .map { it -> [ it[1], it[2], it[-1] ] }.view()
-   */
 /* Macs analyses contains : 
     -Channel split as control or sample
     -Channel cross to have sample & control on same channel emission
@@ -136,8 +88,21 @@ ch_before_dt_lib.map {it -> [ it[0], it[3]]}
             files: it[1]
         }
 .set{ch_dt_input}
-ch_dt_input.labels.collect().view()
-ch_dt_input.files.collect().view()
+//ch_dt_input.labels.collect().view()
+//ch_dt_input.files.collect().view()
+
+process toto {
+    tag "$BedName"
+    echo true
+    input:
+    labels from ch_dt_input.labels.collect()
+    files from ch_dt_input.files.collect()
+    tuple BedName, file(BedFile), BedPref, BedFls BedExts, BedExtls, BedExtvs design_bed_csv
+    """
+    echo ${BedName} \\n ${BedFile} \\n ${labels} \\n ${files}
+    """
+}
+
 /*if($params.deeptools_analyses){
     process dt_MultiBWsummary {
         tag "$BedName"
@@ -302,3 +267,53 @@ testbw_ch
     .view()
 
 */
+
+/*
+if(testing_combine_cross_etc){
+ Combine works to have a channel with both Bed & Bw
+testbed_ch
+    .combine(testbw_ch)
+    .view()
+
+*/
+
+/* Filtering files that are not control datasets
+    applying array modification (.map)
+    grouping per "LibIsControl"
+    setting into new channel */
+/*ch_control_bam
+    .filter { it[14] != "" && it[15] == "" }
+    .map { it -> [ it[14], it[0],it[1], it[2]]}
+    .groupTuple(by: 0)
+    .set { ch_macs2_control_bam } 
+*/
+/* Filtering out files that are control datasets
+    applying same organization as ch_macs2_control_bam
+    setting into new channel */
+/*ch_sample_bam
+    .filter { it[14] == "" && it[15] != "" } // && it[15].ifEmpty()
+    .map { it -> [ it[15], it[0], it[1], it[2] ] } //.view()
+    .set { ch_macs2_sample_bam }
+*/
+
+/* Crossing  control_bam channel with sample_bam channel
+    outputs one group of value per association
+    - CTRL1 with ChIP1a
+    - CRTL1 with ChIP1b
+    - CTRL2 with ChIP2*/
+/*
+Cross     sample.control => 1 output
+Cross     control.sample => 2 output [array control, array sample] GOOD !
+Combine   control.sample => 4 output not matching
+Join      control.sample => 1 output */
+
+ /*ch_macs2_control_bam
+   .cross(ch_macs2_sample_bam)
+   .set { ch_macs2_run }
+ */
+   //.map {it.flatten()}
+   //.view()
+   /*.transpose().map{ it -> [it[1]]}.view()
+  .map { it.flatten() }
+   .map { it -> [ it[1], it[2], it[-1] ] }.view()
+ }*/
