@@ -117,7 +117,7 @@ if(params.deeptools_analyses){
 
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
-
+ch_dt_files_computeMatrix.view()
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
