@@ -225,7 +225,7 @@ if(params.deeptools_analyses){
         --endLabel '0' \
         --yMin 0 \
         --xAxisLabel ${BedName} \
-        --samplesLabel Array with Labels
+        --samplesLabel ${Labels.join(' ')}
         """
     }
 }
