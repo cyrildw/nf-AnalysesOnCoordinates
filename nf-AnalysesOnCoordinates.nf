@@ -3,9 +3,9 @@ Channel
    .fromPath(params.input_design)
    .splitCsv(header:true, sep:';')
    .map { row -> [ row.LibName,  
-                    file("$row.LibBam", checkIfExists: true),
-                    file("${row.LibBam}.bai", checkIfExists: true),
-                    file("$row.LibBW", checkIfExists: true),
+                    file("$params.input_dir/$row.LibBam", checkIfExists: true),
+                    file("$params.input_dir/${row.LibBam}.bai", checkIfExists: true),
+                    file("$params.input_dir/$row.LibBW", checkIfExists: true),
                     row.LibSequenced,
                     row.LibMapped,
                     row.LibUnique,
@@ -25,7 +25,7 @@ Channel
     .fromPath(params.bed_design)
     .splitCsv(header:true, sep:";")
     .map { row -> [row.BedName,
-		file("$row.BedFile", checkIfExists: true),
+		file("$params.input_dir/$row.BedFile", checkIfExists: true),
 		row.BedPref,
 		row.BedFls,
 		row.BedExts,
