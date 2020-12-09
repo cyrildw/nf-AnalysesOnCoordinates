@@ -43,7 +43,7 @@ Channel
         - 10% most enriched
         - 50% most enriched
 
-if($params.macs2_analyses){
+if(params.macs2_analyses){
 
     process macs2_run {
         label 'local'
@@ -96,7 +96,7 @@ if($params.macs2_analyses){
     """
 }
 */
-if($params.deeptools_analyses){
+if(params.deeptools_analyses){
 
 /* Deeptools process requires
     -bw & Bed files for computation
@@ -235,7 +235,7 @@ if($params.deeptools_analyses){
     -quantiles
 - Outputing R objects (and R scripts ?)
 
-if($params.r_analyses){
+if(params.r_analyses){
     process tag_density {
         tag "$LibName"
         input:
