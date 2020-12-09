@@ -88,15 +88,15 @@ ch_before_dt_lib.map {it -> [ it[0], it[3]]}
             files: it[1]
         }
 .set{ch_dt_input}
-ch_dt_input.labels.collect()//.set{ch_dt_input.labels}
-ch_dt_input.files.collect()//.set{ch_dt_input.labels}
+ch_dt_input.labels.collect().set{ch_dt_labels}
+ch_dt_input.files.collect().set{ch_dt_files}
 
 process toto {
     tag "$BedName"
     echo true
     input:
-    list(Labels) from ch_dt_input.labels
-    list(Files) from ch_dt_input.files
+    list(Labels) from ch_dt_labels
+    list(Files) from ch_dt_files
     tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv
     """
     echo ${BedName} \\n ${BedFile} \\n ${Labels} \\n ${Files}
