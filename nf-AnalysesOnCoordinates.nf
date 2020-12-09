@@ -131,7 +131,6 @@ if($params.macs2_analyses){
 
 */
 test1_ch.map {it -> [ label:it[0], file:it[3]]}
-.collate()
 .view()
 /*if($params.deeptools_analyses){
     process dt_MultiBWsummary {
