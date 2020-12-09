@@ -211,7 +211,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        file(matrix) from computMatrix_ch
+        file(matrix) from ch_computeMatrix_matrix
         val(Labels) from ch_dt_labels_plotHeatmap
         val(BedName) from ch_computeMatrix_bedname
         output:
