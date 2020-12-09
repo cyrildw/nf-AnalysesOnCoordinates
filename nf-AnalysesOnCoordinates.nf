@@ -227,7 +227,7 @@ if(params.deeptools_analyses){
         """
     }
 }
-*/
+
 
 /*R analyses includes : 
 - Combine all libraries with all bedfiles
