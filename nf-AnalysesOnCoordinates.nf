@@ -213,7 +213,8 @@ if(params.deeptools_analyses){
         input:
         file(matrix) from computMatrix_ch
         val(Labels) from ch_dt_labels_plotHeatmap
-        val(BedName) from ch_computeMatrix_bedname:
+        val(BedName) from ch_computeMatrix_bedname
+        output:
         file("Heatmap.dt_PlotHeatmap.${BedName}.pdf")
         script:
         """
