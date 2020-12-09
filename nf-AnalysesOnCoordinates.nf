@@ -168,7 +168,7 @@ if(params.deeptools_analyses){
         --plotTitle ${BedName} \
         --labels ${Labels.join(' ')}
         """
-    }}/*
+    }}
     // Adujst for reference point
     
     process dt_ComputeMatrix {
@@ -180,15 +180,19 @@ if(params.deeptools_analyses){
             else null
         }
         input:
+        tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_computeMatrix.take(1)
+        file(Files) from ch_dt_files_computeMatrix
         output:
+        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        val(BedName) into ch_computeMatrix_bedname
         script:
         """
         computeMatrix scale-regions \
-        -S Array with bigwig files \
+        -S ${Files.join(' ')} \
         -R ${BedFile} \
-        -b amount of nt before \
-        -a amount of nt after \
-        -m size of the middle region \
+        -b 0 \
+        -a 0 \
+        -m 1000 \
         --skipZeros \
         -p ${task.cpus} \
         -o dt_ComputeMatrix.${BedName}.gz
