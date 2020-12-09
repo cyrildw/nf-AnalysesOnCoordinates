@@ -168,7 +168,7 @@ if($params.deeptools_analyses){
         --plotTitle ${BedName} \
         --labels ${Labels.join(' ')}
         """
-    }/*
+    }}/*
     // Adujst for reference point
     
     process dt_ComputeMatrix {
