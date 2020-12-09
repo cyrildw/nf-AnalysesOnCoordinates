@@ -154,8 +154,8 @@ if(params.deeptools_analyses){
         val Labels from ch_dt_labels_plotCor
         val(BedName) from ch_multibw_bedname
         output:
-        "dt_MultiBWsummary.CorTable.${BedName}.tab"
-        "Heatmap.dt_MultiBWsummary.${BedName}.pdf"
+        file("dt_MultiBWsummary.CorTable.${BedName}.tab")
+        file("Heatmap.dt_MultiBWsummary.${BedName}.pdf")
         script:
         """
         plotCorrelation \
