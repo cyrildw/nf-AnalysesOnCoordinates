@@ -128,10 +128,10 @@ if(params.deeptools_analyses){
         }
         input:
         tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary.take(1)
-        val Files from ch_dt_files_multiBWsummary
+        files(Files) from ch_dt_files_multiBWsummary
         output:
         "dt_MultiBWsummary.Matix.${BedName}.npz" into ch_multibw_matrix //the computed matrix
-        val BedName into ch_multibw_bedname
+        val(BedName) into ch_multibw_bedname
         script:
         """
         multiBigwigSummary BED-file \
@@ -152,7 +152,7 @@ if(params.deeptools_analyses){
         input:
         file(Matrix) from ch_multibw_matrix
         val Labels from ch_dt_labels_plotCor
-        val BedName from ch_multibw_bedname
+        val(BedName) from ch_multibw_bedname
         output:
         "dt_MultiBWsummary.CorTable.${BedName}.tab"
         "Heatmap.dt_MultiBWsummary.${BedName}.pdf"
