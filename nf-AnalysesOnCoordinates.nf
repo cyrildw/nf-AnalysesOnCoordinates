@@ -135,8 +135,9 @@ ch_before_dt_lib.map {it -> [ it[0], it[3]]}
             labels: it[0]
             files: it[1]
         }
-.set{ch_dt_labels_and_files}
-.view()
+.set{ch_dt_input}
+ch_dt_input.labels.collect().view()
+ch_dt_input.files.collect().view()
 /*if($params.deeptools_analyses){
     process dt_MultiBWsummary {
         tag "$BedName"
