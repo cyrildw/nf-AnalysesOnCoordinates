@@ -32,7 +32,7 @@ Channel
 		row.BedExtls,
 		row.BedExtvs ]
         }
-    .into { design_bed_csv; testbed_ch }
+    .into { design_bed_csv; ch_before_dt_bed }
 /* Macs analyses contains : 
     -Channel split as control or sample
     -Channel cross to have sample & control on same channel emission
@@ -82,14 +82,6 @@ if($params.macs2_analyses){
         --linesAtTickMarks ?
 
 */
-ch_before_dt_lib.map {it -> [ it[0], it[3]]}
-.multiMap { it ->
-            labels: it[0]
-            files: it[1]
-        }
-.set{ch_dt_input}
-ch_dt_input.labels.collect().set{ch_dt_labels}
-ch_dt_input.files.collect().set{ch_dt_files}
 
 ch_dt_labels.view()
 process toto {
@@ -100,11 +92,32 @@ process toto {
     val Files from ch_dt_files
     tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
     """
-    echo ${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
+    echo "${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
     """
 }
 
-/*if($params.deeptools_analyses){
+if($params.deeptools_analyses){
+
+/* Deeptools process requires
+    -bw & Bed files for computation
+    -labels & BedName for plotting
+*/
+    ch_before_dt_bed
+        .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
+
+    ch_before_dt_lib.map {it -> [ it[0], it[3]]}
+        .multiMap { it ->
+                    labels: it[0]
+                    files: it[1]
+                }
+        .set{ch_dt_input}
+
+    ch_dt_input.labels.collect()
+        .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap}
+
+    ch_dt_input.files.collect()
+        .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
+
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
@@ -114,14 +127,15 @@ process toto {
             else null
         }
         input:
-        data from bed_channel
-        libs from lib_channel
+        tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary.take(1)
+        val Files from ch_dt_files_multiBWsummary
         output:
-        "dt_MultiBWsummary.Matix.${BedName}.npz" into multibw_matrix
+        "dt_MultiBWsummary.Matix.${BedName}.npz" into ch_multibw_matrix //the computed matrix
+        val BedName into ch_multibw_bedname
         script:
         """
         multiBigwigSummary BED-file \
-        -b Array with bigwigs \
+        -b ${Files.join(' ')} \
         -o dt_MultiBWsummary.Matrix.${BedName}.npz \
         --BED ${BedFile} \
         --numberOfProcessors ${task.cpus}
@@ -136,24 +150,25 @@ process toto {
             else null
         }
         input:
-        matrix from multibw_matrix
-        labels from lib_channel_labels
+        file(Matrix) from ch_multibw_matrix
+        val Labels from ch_dt_labels_plotCor
+        val BedName from ch_multibw_bedname
         output:
         "dt_MultiBWsummary.CorTable.${BedName}.tab"
         "Heatmap.dt_MultiBWsummary.${BedName}.pdf"
         script:
         """
         plotCorrelation \
-        --corData ${matrix} \
+        --corData ${Matrix} \
         --corMethod spearman \
         --whatToPlot heatmap \
         --plotNumbers \
         --outFileCorMatrix dt_MultiBWsummary.CorTable.${BedName}.tab \
         -o Heatmap.dt_MultiBWsummary.${BedName}.pdf \
         --plotTitle ${BedName} \
-        --labels array with labels
+        --labels ${Labels.join(' ')}
         """
-    }
+    }/*
     // Adujst for reference point
     
     process dt_ComputeMatrix {
