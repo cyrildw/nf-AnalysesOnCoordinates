@@ -19,7 +19,7 @@ Channel
                     row.LibIsControl,
                     row.LibControl ]
                     }
-   .into { design_bigwig_csv; ch_before_dt_lib.map}
+   .into { design_bigwig_csv; ch_before_dt_lib}
 
 Channel
     .fromPath(params.bed_design)
