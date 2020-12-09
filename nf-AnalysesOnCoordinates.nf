@@ -130,8 +130,8 @@ if($params.macs2_analyses){
         --linesAtTickMarks ?
 
 */
-test1_ch.map {it -> [ it[0], it[3]]}
-.transpose()
+test1_ch.map {it -> [ label:it[0], file:it[3]]}
+.collate()
 .view()
 /*if($params.deeptools_analyses){
     process dt_MultiBWsummary {
