@@ -98,9 +98,9 @@ process toto {
     input:
     val Labels from ch_dt_labels
     val Files from ch_dt_files
-    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv
+    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
     """
-    echo ${BedName} \\n ${BedFile} \\n ${Labels.join(' ')} \\n ${Files.join(' ')}
+    echo ${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
     """
 }
 
