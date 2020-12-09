@@ -130,7 +130,7 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary.take(1)
         file(Files) from ch_dt_files_multiBWsummary
         output:
-        file("dt_MultiBWsummary.Matix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
+        file("dt_MultiBWsummary.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
         val(BedName) into ch_multibw_bedname
         script:
         """
