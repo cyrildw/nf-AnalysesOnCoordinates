@@ -91,6 +91,7 @@ ch_before_dt_lib.map {it -> [ it[0], it[3]]}
 ch_dt_input.labels.collect().set{ch_dt_labels}
 ch_dt_input.files.collect().set{ch_dt_files}
 
+ch_dt_labels.view()
 process toto {
     tag "$BedName"
     echo true
