@@ -88,8 +88,8 @@ ch_before_dt_lib.map {it -> [ it[0], it[3]]}
             files: it[1]
         }
 .set{ch_dt_input}
-//ch_dt_input.labels.collect().view()
-//ch_dt_input.files.collect().view()
+ch_dt_input.labels.collect().set{ch_dt_input.labels}
+ch_dt_input.files.collect().set{ch_dt_input.labels}
 
 process toto {
     tag "$BedName"
