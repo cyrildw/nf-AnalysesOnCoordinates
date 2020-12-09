@@ -117,7 +117,7 @@ if(params.deeptools_analyses){
 
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
-ch_dt_files_computeMatrix.view()
+
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
@@ -130,8 +130,8 @@ ch_dt_files_computeMatrix.view()
         tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary.take(1)
         file(Files) from ch_dt_files_multiBWsummary
         output:
-        "dt_MultiBWsummary.Matix.$BedName.npz" into ch_multibw_matrix //the computed matrix
-        val(BedName) into ch_multibw_bedname
+        "dt_MultiBWsummary.Matix.${BedName}.npz" into ch_multibw_matrix //the computed matrix
+        //val(BedName) into ch_multibw_bedname
         script:
         """
         multiBigwigSummary BED-file \
