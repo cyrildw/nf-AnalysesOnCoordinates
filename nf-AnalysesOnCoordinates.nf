@@ -130,7 +130,7 @@ ch_dt_files_computeMatrix.view()
         tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary.take(1)
         file(Files) from ch_dt_files_multiBWsummary
         output:
-        "dt_MultiBWsummary.Matix.${BedName}.npz" into ch_multibw_matrix //the computed matrix
+        "dt_MultiBWsummary.Matix.$BedName.npz" into ch_multibw_matrix //the computed matrix
         val(BedName) into ch_multibw_bedname
         script:
         """
