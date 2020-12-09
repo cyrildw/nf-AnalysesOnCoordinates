@@ -222,7 +222,7 @@ if(params.deeptools_analyses){
         --matrixFile ${matrix} \
         -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
         --startLabel '1' \
-        --endLabel '0'
+        --endLabel '0' \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel Array with Labels
