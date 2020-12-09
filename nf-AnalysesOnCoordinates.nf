@@ -83,8 +83,8 @@ if($params.macs2_analyses){
 
 */
 
-ch_dt_labels.view()
-process toto {
+
+/*process toto {
     tag "$BedName"
     echo true
     input:
@@ -95,7 +95,7 @@ process toto {
     echo "${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
     """
 }
-
+*/
 if($params.deeptools_analyses){
 
 /* Deeptools process requires
