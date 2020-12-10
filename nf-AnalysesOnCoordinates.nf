@@ -125,7 +125,7 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
 
         script:
-        //if($BedGroupFile!=''){
+        if(BedGroupFile!=params.input_dir){
             //Creating 1 file per group + 1 file with goupefile-names.
             //Then greping ids from each group file into the BED file to produce 1 GroupBedFile/group.
             """
@@ -141,7 +141,7 @@ if(params.deeptools_analyses){
                 done;
             done
             """
-        //}
+        }
     }
 ch_dt_bed_computeMatrix.view()
     /*
