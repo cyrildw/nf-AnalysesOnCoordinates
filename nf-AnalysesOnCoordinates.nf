@@ -133,7 +133,7 @@ if(params.deeptools_analyses){
             done
 
             cat ${BedName}.GrpFiles.txt | while read line;do
-                sed "s/\t/\n/g" \$line | grep -v "#" | 
+                sed "s/\\t/\\n/g" \$line | grep -v "#" | 
                 while read id; do 
                     grep \$id ${BedFile} >> "${BedName}.\$line.bed";
                 done;
