@@ -125,7 +125,7 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
 
         script:
-        if(BedGroupFile.isEmpty()){
+        if(file(BedGroupFile).isEmpty()){
         }
         else{
             //Creating 1 file per group + 1 file with goupefile-names.
