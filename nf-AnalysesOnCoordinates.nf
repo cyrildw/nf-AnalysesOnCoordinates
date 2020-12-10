@@ -126,6 +126,9 @@ if(params.deeptools_analyses){
 
         script:
         if(file(BedGroupFile).isEmpty()){
+            """
+            touch ${BedName}.GrpFiles.txt
+            """
         }
         else{
             //Creating 1 file per group + 1 file with goupefile-names.
