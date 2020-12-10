@@ -113,6 +113,36 @@ if(params.deeptools_analyses){
     -bw & Bed files for computation
     -labels & BedName for plotting
 */
+    process bedGroups {
+        tag "$BedName"
+        input:
+        tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
+        output:
+        files "*.txt"
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), files("${BedName}.*.bed") into ch_dt_bed_computeMatrix
+        tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
+
+        script:
+        if($BedGroupFile!=''){
+            //Creating 1 file per group + 1 file with goupefile-names.
+            //Then greping ids from each group file into the BED file to produce 1 GroupBedFile/group.
+            """
+            cat ${BedGroupFile} | while read line; do 
+                echo -e \${line//;/"\t"} | \
+                awk '{ print "#"\$0 > \$1".txt"; print \$1".txt" >> "${BedName}.GrpFiles.txt" } ';
+            done
+
+            cat ${BedName}.GrpFiles.txt | while read line;do
+                sed "s/\t/\n/g" \$line | grep -v "#" | 
+                while read id; do 
+                    grep \$id ${BedFile} >> "${BedName}.\$line.bed";
+                done;
+            done
+            """
+        }
+    }
+ch_dt_bed_computeMatrix.view()
+    /*
     ch_before_dt_bed
         .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
 
@@ -238,7 +268,7 @@ if(params.deeptools_analyses){
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-    }
+    }*/
 }
 
 
