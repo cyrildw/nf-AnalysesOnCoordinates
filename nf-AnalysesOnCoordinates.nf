@@ -127,7 +127,7 @@ if(params.deeptools_analyses){
         script:
         if(file(BedGroupFile).isEmpty()){
             """
-            touch ${BedName}.GrpFiles.txt
+            touch ${BedName}.GrpFiles.txt ${BedName}.nogroup.bed 
             """
         }
         else{
