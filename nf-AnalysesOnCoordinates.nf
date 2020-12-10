@@ -34,6 +34,7 @@ Channel
 		row.BedExtvs ]
         }
     .into { design_bed_csv; ch_before_dt_bed }
+    design_bed_csv.view()
 /* Macs analyses contains : 
     -Channel split as control or sample
     -Channel cross to have sample & control on same channel emission
