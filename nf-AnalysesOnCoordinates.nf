@@ -26,6 +26,7 @@ Channel
     .splitCsv(header:true, sep:";")
     .map { row -> [row.BedName,
 		file("$params.input_dir/$row.BedFile", checkIfExists: true),
+        file("$params.input_dir/$row.BedGroupFile"),
 		row.BedPref,
 		row.BedFls,
 		row.BedExts,
@@ -83,19 +84,29 @@ if(params.macs2_analyses){
 
 */
 
+/*Making groups
+ - from bed channel + groupFile
+ - groupFile = 1 line per group; 
+    GroupName_1;ID;ID;ID;ID
+    GroupName_2;ID;ID;ID;ID
+ - Creating 1 file per group
+    - using IDs to grep in the bed file
+    - 1 subBED per group
+ 
+rm groupenames.txt
+cat testgroup.txt | while read line; do 
+    echo -e ${line//;/"\t"} | \
+    awk '{ print "#"$0 > $1".txt"; print $1".txt" >> "groupenames.txt" } ';
+done
 
-/*process toto {
-    tag "$BedName"
-    echo true
-    input:
-    val Labels from ch_dt_labels
-    val Files from ch_dt_files
-    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
-    """
-    echo "${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
-    """
-}
-*/
+cat groupenames.txt | while read line;do
+    sed "s/\t/\n/g" $line | grep -v "#" | 
+    while read id; do 
+        grep $id TSS_TES_steinmetz_jacquier.mRNA.bed >> "$line.bed";
+    done;
+done
+
+
 if(params.deeptools_analyses){
 
 /* Deeptools process requires
@@ -282,6 +293,22 @@ if(params.r_analyses){
 
 }
 */
+
+
+/*process toto {
+    tag "$BedName"
+    echo true
+    input:
+    val Labels from ch_dt_labels
+    val Files from ch_dt_files
+    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
+    """
+    echo "${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
+    """
+}
+*/
+
+
 /*
 testbw_ch
     .map { it -> [ name:it[0], name:it[1] ]}
