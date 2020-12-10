@@ -119,8 +119,8 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
         output:
         files "*.txt"
-        tuple val(BedName), file(BedFile), file("${BedName}.GrpFiles.txt"), files("${BedName}.*.bed") into ch_dt_bed_computeMatrix
-        tuple val(BedName), file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bed_computeMatrix
+        tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
 
         script:
         if($BedGroupFile!=''){
