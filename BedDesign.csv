@@ -1,2 +1,2 @@
 BedName;BedFile;BedGroupFile;BedPref;BedFls;BedExts;BedExtls;BedExtvs
-TRANSCRIPTS_EXT;TSS_TES_steinmetz_jacquier.mRNA.500bp_ext.bed;;mRNA.500bp_ext;100;TRUE;500;10
+TRANSCRIPTS_EXT;TSS_TES_steinmetz_jacquier.mRNA.500bp_ext.bed;testgroup.txt;mRNA.500bp_ext;100;TRUE;500;10

@@ -105,7 +105,7 @@ cat groupenames.txt | while read line;do
         grep $id TSS_TES_steinmetz_jacquier.mRNA.bed >> "$line.bed";
     done;
 done
-
+*/
 
 if(params.deeptools_analyses){
 
