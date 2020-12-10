@@ -119,6 +119,7 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
         output:
         files "*.txt"
+        files "*.bed"
         tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bed_computeMatrix
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
 
@@ -128,7 +129,7 @@ if(params.deeptools_analyses){
             //Then greping ids from each group file into the BED file to produce 1 GroupBedFile/group.
             """
             cat ${BedGroupFile} | while read line; do 
-                echo -e \${line//;/"\t"} | \
+                echo -e \${line//;/"\\t"} | \
                 awk '{ print "#"\$0 > \$1".txt"; print \$1".txt" >> "${BedName}.GrpFiles.txt" } ';
             done
 
