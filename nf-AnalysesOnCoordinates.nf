@@ -120,7 +120,7 @@ if(params.deeptools_analyses){
         output:
         files "*.txt"
         files "*.bed"
-        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into (ch_test,ch_dt_bedGroup_computeMatrix)
         tuple BedName, file(BedFile) into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
 
         script:
@@ -148,7 +148,7 @@ if(params.deeptools_analyses){
             
         }
     }
-    ch_dt_bedGroup_computeMatrix.view()
+    ch_test.view()
 
     //ch_before_dt_bed
     //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
