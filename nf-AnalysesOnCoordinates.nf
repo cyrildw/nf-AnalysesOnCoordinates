@@ -121,8 +121,8 @@ if(params.deeptools_analyses){
         output:
         files "*.txt"
         files "*.bed"
-        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bed_computeMatrix
-        tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs into ch_dt_bed_multiBWsummary
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile) into {ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
 
         script:
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
@@ -149,10 +149,10 @@ if(params.deeptools_analyses){
             
         }
     }
-ch_dt_bed_computeMatrix.view()
-    /*
-    ch_before_dt_bed
-        .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
+
+
+    //ch_before_dt_bed
+    //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
 
     ch_before_dt_lib.map {it -> [ it[0], it[3]]}
         .multiMap { it ->
@@ -162,11 +162,12 @@ ch_dt_bed_computeMatrix.view()
         .set{ch_dt_input}
 
     ch_dt_input.labels.collect()
-        .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap}
+        .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap}
 
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
 
+/*
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
@@ -176,7 +177,7 @@ ch_dt_bed_computeMatrix.view()
             else null
         }
         input:
-        tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_multiBWsummary
+        tuple BedName, file(BedFile) from ch_dt_bed_multiBWsummary
         file(Files) from ch_dt_files_multiBWsummary
         output:
         file("dt_MultiBWsummary.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
@@ -229,7 +230,7 @@ ch_dt_bed_computeMatrix.view()
             else null
         }
         input:
-        tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_dt_bed_computeMatrix
+        tuple BedName, file(BedFile) from ch_dt_bed_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
         output:
         file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
@@ -276,7 +277,52 @@ ch_dt_bed_computeMatrix.view()
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-    }*/
+    }
+    */
+    //If groups have been mentionned then produce heatmaps per groups
+    process dt_Group_ComputeMatrix {
+        tag "$BedName"
+        label "multiCpu"
+        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.gz')) "./$filename"
+            else null
+        }
+        input:
+        tuple BedName, file(BedFile),file(BedGrpFiles), files(BedGrpBedFiles) from ch_dt_bed_computeMatrix
+        file(Files) from ch_dt_files_computeMatrix
+        output:
+        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        val(BedName) into ch_computeMatrix_bedname
+        
+        when:
+        file(BedGrpFile).size() != 0
+
+        script:
+        """
+        echo ${BedName} ${BedGrpFiles} ${BedGrpBedFiles}
+        """
+        /*"""
+        computeMatrix scale-regions \
+        -S ${Files.join(' ')} \
+        -R ${BedFile} \
+        -b 0 \
+        -a 0 \
+        -m 1000 \
+        --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.${BedName}.gz
+
+        plotHeatmap \
+        --matrixFile ${matrix} \
+        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
+        --startLabel '1' \
+        --endLabel '0' \
+        --yMin 0 \
+        --xAxisLabel ${BedName} \
+        --samplesLabel ${Labels.join(' ')}
+        """*/
+    }
 }
 
 
