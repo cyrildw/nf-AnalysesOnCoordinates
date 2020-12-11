@@ -280,6 +280,7 @@ if(params.deeptools_analyses){
     }
     */
     //If groups have been mentionned then produce heatmaps per groups
+    ch_dt_bedGroup_computeMatrix.view()
     process dt_Group_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
