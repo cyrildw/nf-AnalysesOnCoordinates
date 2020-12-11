@@ -122,8 +122,7 @@ if(params.deeptools_analyses){
         files "*.txt"
         files "*.bed"
         tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into ch_dt_bedGroup_computeMatrix
-        tuple BedName, file(BedFile) into (ch_dt_bed_multiBWsummary; 
-                                            ch_dt_bed_computeMatrix)
+        tuple BedName, file(BedFile) into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
 
         script:
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
