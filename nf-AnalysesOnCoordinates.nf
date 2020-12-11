@@ -209,8 +209,8 @@ if(params.deeptools_analyses){
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-        
-    }*/
+     */   
+    }
 
 /*
     process dt_MultiBWsummary {
