@@ -185,7 +185,7 @@ if(params.deeptools_analyses){
 */
         script:
         """
-        echo ${BedName} ${BedGrpFiles} ${BedGrpBedFiles}
+        echo ${BedName} ${BedGrpFile} ${BedGrpBedFiles}
         """
         
         /*
