@@ -168,6 +168,7 @@ if(params.deeptools_analyses){
     process dt_Group_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
+        echo true
         publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./$filename"
