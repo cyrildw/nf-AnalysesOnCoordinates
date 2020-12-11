@@ -34,7 +34,6 @@ Channel
 		row.BedExtvs ]
         }
     .into { design_bed_csv; ch_before_dt_bed }
-    design_bed_csv.view()
 /* Macs analyses contains : 
     -Channel split as control or sample
     -Channel cross to have sample & control on same channel emission
@@ -149,7 +148,7 @@ if(params.deeptools_analyses){
             
         }
     }
-
+    ch_dt_bedGroup_computeMatrix.view()
 
     //ch_before_dt_bed
     //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
