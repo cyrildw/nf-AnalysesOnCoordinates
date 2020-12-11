@@ -165,6 +165,51 @@ if(params.deeptools_analyses){
 
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
+    process dt_Group_ComputeMatrix {
+        tag "$BedName"
+        label "multiCpu"
+        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.gz')) "./$filename"
+            else null
+        }
+        input:
+        tuple BedName, file(BedFile),file(BedGrpFiles), files(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
+        file(Files) from ch_dt_files_computeMatrix
+        output:
+        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        val(BedName) into ch_computeMatrix_bedname
+        
+        when:
+        file(BedGrpFile).size() != 0
+
+        script:
+        """
+        echo ${BedName} ${BedGrpFiles} ${BedGrpBedFiles}
+        """
+        /*
+        """
+        computeMatrix scale-regions \
+        -S ${Files.join(' ')} \
+        -R ${BedFile} \
+        -b 0 \
+        -a 0 \
+        -m 1000 \
+        --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.${BedName}.gz
+
+        plotHeatmap \
+        --matrixFile ${matrix} \
+        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
+        --startLabel '1' \
+        --endLabel '0' \
+        --yMin 0 \
+        --xAxisLabel ${BedName} \
+        --samplesLabel ${Labels.join(' ')}
+        """
+        */
+    }
 
 /*
     process dt_MultiBWsummary {
@@ -280,49 +325,6 @@ if(params.deeptools_analyses){
     */
     //If groups have been mentionned then produce heatmaps per groups
  
-    /*process dt_Group_ComputeMatrix {
-        tag "$BedName"
-        label "multiCpu"
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
-        saveAs: { filename ->
-            if (filename.endsWith('.gz')) "./$filename"
-            else null
-        }
-        input:
-        tuple BedName, file(BedFile),file(BedGrpFiles), files(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
-        file(Files) from ch_dt_files_computeMatrix
-        output:
-        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
-        val(BedName) into ch_computeMatrix_bedname
-        
-        when:
-        file(BedGrpFile).size() != 0
-
-        script:
-        """
-        echo ${BedName} ${BedGrpFiles} ${BedGrpBedFiles}
-        """
-        /*"""
-        computeMatrix scale-regions \
-        -S ${Files.join(' ')} \
-        -R ${BedFile} \
-        -b 0 \
-        -a 0 \
-        -m 1000 \
-        --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.${BedName}.gz
-
-        plotHeatmap \
-        --matrixFile ${matrix} \
-        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
-        --startLabel '1' \
-        --endLabel '0' \
-        --yMin 0 \
-        --xAxisLabel ${BedName} \
-        --samplesLabel ${Labels.join(' ')}
-        """
-    }*/
 }
 
 
