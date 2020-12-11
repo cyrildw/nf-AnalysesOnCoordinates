@@ -177,7 +177,7 @@ if(params.deeptools_analyses){
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
-        //output:
+        output:
         file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
         file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
         //val(BedName) into ch_computeMatrix_bedname
