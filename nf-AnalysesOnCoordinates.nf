@@ -165,7 +165,7 @@ if(params.deeptools_analyses){
 
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
-    process dt_Group_ComputeMatrix {
+   /* process dt_Group_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -187,6 +187,7 @@ if(params.deeptools_analyses){
         """
         echo ${BedName} ${BedGrpFiles} ${BedGrpBedFiles}
         """
+        */
         /*
         """
         computeMatrix scale-regions \
