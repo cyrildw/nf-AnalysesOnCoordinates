@@ -186,12 +186,10 @@ if(params.deeptools_analyses){
         when:
         BedGrpFile.size() != 0
 
-        script:
-        
         """
         computeMatrix scale-regions \
         -S ${Files.join(' ')} \
-        -R ${BedGrpBedFiles.join(' ')}\
+        -R ${BedGrpBedFiles.join(' ')} \
         -b 0 \
         -a 0 \
         -m 1000 \
