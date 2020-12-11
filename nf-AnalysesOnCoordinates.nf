@@ -279,8 +279,8 @@ if(params.deeptools_analyses){
     }
     */
     //If groups have been mentionned then produce heatmaps per groups
-    ch_dt_bedGroup_computeMatrix.view()
-    process dt_Group_ComputeMatrix {
+ 
+    /*process dt_Group_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -291,10 +291,10 @@ if(params.deeptools_analyses){
         input:
         tuple BedName, file(BedFile),file(BedGrpFiles), files(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
-        /*output:
+        output:
         file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
         val(BedName) into ch_computeMatrix_bedname
-        */
+        
         when:
         file(BedGrpFile).size() != 0
 
@@ -321,8 +321,8 @@ if(params.deeptools_analyses){
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
-        """*/
-    }
+        """
+    }*/
 }
 
 
