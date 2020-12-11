@@ -177,6 +177,7 @@ if(params.deeptools_analyses){
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
+        val(Labels) from ch_dt_labels_groupHeatmap
         output:
         file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
         file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
@@ -186,10 +187,6 @@ if(params.deeptools_analyses){
         BedGrpFile.size() != 0
 
         script:
-        """
-        echo ${BedName} ${BedGrpFile} ${BedGrpBedFiles}
-        """
-        
         
         """
         computeMatrix scale-regions \
