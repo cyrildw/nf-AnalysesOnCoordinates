@@ -291,10 +291,10 @@ if(params.deeptools_analyses){
         input:
         tuple BedName, file(BedFile),file(BedGrpFiles), files(BedGrpBedFiles) from ch_dt_bed_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
-        output:
+        /*output:
         file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
         val(BedName) into ch_computeMatrix_bedname
-        
+        */
         when:
         file(BedGrpFile).size() != 0
 
