@@ -178,7 +178,8 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
         //output:
-        //file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
+        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
         //val(BedName) into ch_computeMatrix_bedname
         
         when:
@@ -189,28 +190,28 @@ if(params.deeptools_analyses){
         echo ${BedName} ${BedGrpFile} ${BedGrpBedFiles}
         """
         
-        /*
+        
         """
         computeMatrix scale-regions \
         -S ${Files.join(' ')} \
-        -R ${BedFile} \
+        -R ${BedGrpBedFiles.join(' ')}\
         -b 0 \
         -a 0 \
         -m 1000 \
         --skipZeros \
         -p ${task.cpus} \
-        -o dt_ComputeMatrix.${BedName}.gz
+        -o dt_ComputeMatrix.Group.${BedName}.gz
 
         plotHeatmap \
-        --matrixFile ${matrix} \
-        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
+        --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
+        -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
         --startLabel '1' \
         --endLabel '0' \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-     */   
+       
     }
 
 /*
