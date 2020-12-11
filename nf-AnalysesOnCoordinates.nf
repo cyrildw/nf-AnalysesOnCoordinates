@@ -176,9 +176,9 @@ if(params.deeptools_analyses){
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
-        output:
-        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
-        val(BedName) into ch_computeMatrix_bedname
+        //output:
+        //file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        //val(BedName) into ch_computeMatrix_bedname
         
         /*when:
         file(BedGrpFile).size() != 0
