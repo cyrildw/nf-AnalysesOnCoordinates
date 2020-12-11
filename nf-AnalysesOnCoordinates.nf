@@ -180,9 +180,9 @@ if(params.deeptools_analyses){
         //file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
         //val(BedName) into ch_computeMatrix_bedname
         
-        /*when:
-        file(BedGrpFile).size() != 0
-*/
+        when:
+        BedGrpFile.size() != 0
+
         script:
         """
         echo ${BedName} ${BedGrpFile} ${BedGrpBedFiles}
