@@ -164,52 +164,10 @@ if(params.deeptools_analyses){
         .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap}
 
     ch_dt_input.files.collect()
-        .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix}
-    process dt_Group_ComputeMatrix {
-        tag "$BedName"
-        label "multiCpu"
-        echo true
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
-        saveAs: { filename ->
-            if (filename.endsWith('.gz')) "./$filename"
-            else null
-        }
-        input:
-        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
-        file(Files) from ch_dt_files_computeMatrix
-        val(Labels) from ch_dt_labels_groupHeatmap
-        output:
-        file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
-        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
-        //val(BedName) into ch_computeMatrix_bedname
-        
-        when:
-        BedGrpFile.size() != 0
+        .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix}
+    
 
-        """
-        computeMatrix scale-regions \
-        -S ${Files.join(' ')} \
-        -R ${BedGrpBedFiles.join(' ')} \
-        -b 0 \
-        -a 0 \
-        -m 1000 \
-        --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.Group.${BedName}.gz
 
-        plotHeatmap \
-        --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
-        -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
-        --startLabel '1' \
-        --endLabel '0' \
-        --yMin 0 \
-        --xAxisLabel ${BedName} \
-        --samplesLabel ${Labels.join(' ')}
-        """
-       
-    }
-
-/*
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
@@ -320,9 +278,52 @@ if(params.deeptools_analyses){
         --samplesLabel ${Labels.join(' ')}
         """
     }
-    */
+    
     //If groups have been mentionned then produce heatmaps per groups
- 
+
+    process dt_Group_ComputeMatrix {
+        tag "$BedName"
+        label "multiCpu"
+        echo true
+        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.gz')) "./$filename"
+            else null
+        }
+        input:
+        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
+        file(Files) from ch_dt_files_groupcomputeMatrix
+        val(Labels) from ch_dt_labels_groupHeatmap
+        output:
+        file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
+        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
+        //val(BedName) into ch_computeMatrix_bedname
+        
+        when:
+        BedGrpFile.size() != 0
+
+        """
+        computeMatrix scale-regions \
+        -S ${Files.join(' ')} \
+        -R ${BedGrpBedFiles.join(' ')} \
+        -b 0 \
+        -a 0 \
+        -m 1000 \
+        --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.Group.${BedName}.gz
+
+        plotHeatmap \
+        --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
+        -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+        --startLabel '1' \
+        --endLabel '0' \
+        --yMin 0 \
+        --xAxisLabel ${BedName} \
+        --samplesLabel ${Labels.join(' ')}
+        """
+       
+    }
 }
 
 
