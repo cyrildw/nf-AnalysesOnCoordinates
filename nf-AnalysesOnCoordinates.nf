@@ -285,9 +285,9 @@ if(params.deeptools_analyses){
         tag "$BedName"
         label "multiCpu"
         echo true
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
-            if (filename.endsWith('.gz')) "./$filename"
+            if (filename.endsWith('.gz')) "./DeeptoolsData/$filename"
             else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
             else null
         }
@@ -297,7 +297,7 @@ if(params.deeptools_analyses){
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
         file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
-        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")
+        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")//the heatmap
         //val(BedName) into ch_computeMatrix_bedname
         
         when:
