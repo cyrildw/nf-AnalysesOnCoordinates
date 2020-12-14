@@ -288,6 +288,7 @@ if(params.deeptools_analyses){
         publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./$filename"
+            else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
             else null
         }
         input:
