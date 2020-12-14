@@ -148,7 +148,7 @@ if(params.deeptools_analyses){
             
         }
     }
-    ch_test.view()
+    //ch_test.view()
 
     //ch_before_dt_bed
     //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
