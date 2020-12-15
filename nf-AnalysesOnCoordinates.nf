@@ -201,7 +201,7 @@ if(params.deeptools_analyses){
         }
         input:
         file(Matrix) from ch_multibw_matrix
-        val Labels from ch_dt_labels_plotCor
+        val(Labels) from ch_dt_labels_plotCor
         val(BedName) from ch_multibw_bedname
         output:
         file("dt_MultiBWsummary.CorTable.${BedName}.tab")
@@ -261,7 +261,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        file(matrix) from ch_computeMatrix_matrix
+        file(Matrix) from ch_computeMatrix_matrix
         val(Labels) from ch_dt_labels_plotHeatmap
         val(BedName) from ch_computeMatrix_bedname
         output:
@@ -269,7 +269,7 @@ if(params.deeptools_analyses){
         script:
         """
         plotHeatmap \
-        --matrixFile ${matrix} \
+        --matrixFile ${Matrix} \
         -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
         --startLabel '1' \
         --endLabel '0' \
