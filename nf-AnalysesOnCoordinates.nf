@@ -2,7 +2,7 @@
 Channel
    .fromPath(params.input_design)
    .splitCsv(header:true, sep:';')
-   .map { row -> [ row.LibName,  
+   .map { row -> [ row.LibName,
                     file("$params.input_dir/$row.LibBam", checkIfExists: true),
                     file("$params.input_dir/${row.LibBam}.bai", checkIfExists: true),
                     file("$params.input_dir/$row.LibBW", checkIfExists: true),
@@ -162,10 +162,8 @@ if(params.deeptools_analyses){
 
     ch_dt_input.labels.collect()
         .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap; test3_ch}
-test3_ch.view()
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix; test4_ch}
-    test4_ch.view()
 
 
     process dt_MultiBWsummary {
