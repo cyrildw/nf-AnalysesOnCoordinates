@@ -161,8 +161,8 @@ if(params.deeptools_analyses){
         .set{ch_dt_input}
 
     ch_dt_input.labels.collect()
-        .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap}
-
+        .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap; test3_ch}
+test3_ch.view()
     ch_dt_input.files.collect()
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix}
     
