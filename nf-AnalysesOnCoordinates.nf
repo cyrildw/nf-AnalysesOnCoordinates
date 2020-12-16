@@ -170,7 +170,7 @@ if(params.deeptools_analyses){
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.npz')) "./$filename"
             else null
@@ -192,7 +192,7 @@ if(params.deeptools_analyses){
     }
     process dt_PlotCorrelation {
         tag "$BedName"
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.tab')) "./DeeptoolsData/$filename"
             else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
@@ -223,7 +223,7 @@ if(params.deeptools_analyses){
     process dt_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./$filename"
             else null
@@ -254,7 +254,7 @@ if(params.deeptools_analyses){
     
     process dt_PlotHeatmap {
         tag "$BedName"
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
             else null
@@ -284,7 +284,7 @@ if(params.deeptools_analyses){
         tag "$BedName"
         label "multiCpu"
         echo true
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./DeeptoolsData/$filename"
             else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
