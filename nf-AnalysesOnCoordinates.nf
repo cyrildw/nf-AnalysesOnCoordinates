@@ -115,6 +115,7 @@ if(params.deeptools_analyses){
 */
     process bedGroups {
         tag "$BedName"
+        container=''
         input:
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
         output:
