@@ -2,10 +2,10 @@
 Channel
    .fromPath(params.input_design)
    .splitCsv(header:true, sep:';')
-   .map { row -> [ row.LibName,  
-                    file("$params.input_dir/$row.LibBam", checkIfExists: false),
-                    file("$params.input_dir/${row.LibBam}.bai", checkIfExists: false),
-                    file("$params.input_dir/$row.LibBW", checkIfExists: false),
+   .map { row -> [ row.LibName,
+                    file("$params.input_dir/$row.LibBam", checkIfExists: true),
+                    file("$params.input_dir/${row.LibBam}.bai", checkIfExists: true),
+                    file("$params.input_dir/$row.LibBW", checkIfExists: true),
                     row.LibSequenced,
                     row.LibMapped,
                     row.LibUnique,
@@ -115,6 +115,7 @@ if(params.deeptools_analyses){
 */
     process bedGroups {
         tag "$BedName"
+        container=''
         input:
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
         output:
@@ -162,16 +163,14 @@ if(params.deeptools_analyses){
 
     ch_dt_input.labels.collect()
         .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap; test3_ch}
-test3_ch.view()
     ch_dt_input.files.collect()
-        .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix}
-    
+        .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix; test4_ch}
 
 
     process dt_MultiBWsummary {
         tag "$BedName"
         label "multiCpu"
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.npz')) "./$filename"
             else null
@@ -193,7 +192,7 @@ test3_ch.view()
     }
     process dt_PlotCorrelation {
         tag "$BedName"
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.tab')) "./DeeptoolsData/$filename"
             else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
@@ -201,7 +200,7 @@ test3_ch.view()
         }
         input:
         file(Matrix) from ch_multibw_matrix
-        val Labels from ch_dt_labels_plotCor
+        val(Labels) from ch_dt_labels_plotCor
         val(BedName) from ch_multibw_bedname
         output:
         file("dt_MultiBWsummary.CorTable.${BedName}.tab")
@@ -224,7 +223,7 @@ test3_ch.view()
     process dt_ComputeMatrix {
         tag "$BedName"
         label "multiCpu"
-        publishDir "${params.outdir}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./$filename"
             else null
@@ -255,13 +254,13 @@ test3_ch.view()
     
     process dt_PlotHeatmap {
         tag "$BedName"
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
             else null
         }
         input:
-        file(matrix) from ch_computeMatrix_matrix
+        file(Matrix) from ch_computeMatrix_matrix
         val(Labels) from ch_dt_labels_plotHeatmap
         val(BedName) from ch_computeMatrix_bedname
         output:
@@ -269,7 +268,7 @@ test3_ch.view()
         script:
         """
         plotHeatmap \
-        --matrixFile ${matrix} \
+        --matrixFile ${Matrix} \
         -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
         --startLabel '1' \
         --endLabel '0' \
@@ -285,7 +284,7 @@ test3_ch.view()
         tag "$BedName"
         label "multiCpu"
         echo true
-        publishDir "${params.outdir}/", mode: 'copy', //params.publish_dir_mode,
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.gz')) "./DeeptoolsData/$filename"
             else if (filename.endsWith('.pdf')) "./DeeptoolsFigures/$filename"
