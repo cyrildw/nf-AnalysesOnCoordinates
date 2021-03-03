@@ -116,6 +116,12 @@ if(params.deeptools_analyses){
     process bedGroups {
         tag "$BedName"
         container=''
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.bed')) "./BedFiles/$filename"
+            else null
+        }
+
         input:
         tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
         output:
