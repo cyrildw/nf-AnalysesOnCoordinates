@@ -3,8 +3,8 @@ Channel
    .fromPath(params.input_design)
    .splitCsv(header:true, sep:';')
    .map { row -> [ row.LibName,
-                    file("$params.input_dir/$row.LibBam", checkIfExists: true),
-                    file("$params.input_dir/${row.LibBam}.bai", checkIfExists: true),
+                    file("$params.input_dir/$row.LibBam", checkIfExists: false),
+                    file("$params.input_dir/${row.LibBam}.bai", checkIfExists: false),
                     file("$params.input_dir/$row.LibBW", checkIfExists: true),
                     row.LibSequenced,
                     row.LibMapped,
