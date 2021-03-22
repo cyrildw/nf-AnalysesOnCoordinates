@@ -249,32 +249,30 @@ if(params.deeptools_analyses){
         val(BedName) into ch_computeMatrix_bedname
         script:
         
-        if(!BedReferencePoint){
-        """
-        computeMatrix scale-regions \
-        -S ${Files.join(' ')} \
-        -R ${BedFile} \
-        -b ${BedExtLengthLeft} \
-        -a ${BedExtLengthRight} \
-        -m ${BedFinalLength} \
-        --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.${BedName}.gz
-        """
-        }
-        
-        else{
-        """
-        computeMatrix reference-point \
-        -S ${Files.join(' ')} \
-        -R ${BedFile} \
-        -b ${BedExtLengthLeft} \
-        -a ${BedExtLengthRight} \
-         --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.${BedName}.gz
-        """
-        }
+        if(!$BedReferencePoint)
+            """
+            computeMatrix scale-regions \
+            -S ${Files.join(' ')} \
+            -R ${BedFile} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            -m ${BedFinalLength} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.${BedName}.gz
+            """
+                
+        else
+            """
+            computeMatrix reference-point \
+            -S ${Files.join(' ')} \
+            -R ${BedFile} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.${BedName}.gz
+            """
     }
 
     // Adjust for :
