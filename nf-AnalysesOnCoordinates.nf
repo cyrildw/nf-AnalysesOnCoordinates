@@ -186,7 +186,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile) from ch_dt_bed_multiBWsummary
+        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength from ch_dt_bed_multiBWsummary
         file(Files) from ch_dt_files_multiBWsummary
         output:
         file("dt_MultiBWsummary.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
