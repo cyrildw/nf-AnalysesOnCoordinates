@@ -125,7 +125,7 @@ if(params.deeptools_analyses){
         }
 
         input:
-        tuple BedName, file(BedFile), file(BedGroupFile) from ch_before_dt_bed
+        tuple BedName, file(BedFile), file(BedGroupFile),BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension,BedExtValLeft, BedExtValRight from ch_before_dt_bed
         output:
         files "*.txt"
         files "*.bed"
