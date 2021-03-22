@@ -382,16 +382,18 @@ if(params.deeptools_analyses){
     -grouped elements
     -quantiles
 - Outputing R objects (and R scripts ?)*/
-ch_before_R_bed.combine(ch_before_R_lib).view()
-    //.set{ch_R_channel}
+ch_before_R_bed.combine(ch_before_R_lib)
+    .set{ch_R_TD}
+
+//r_func=Channel.fromPath(params.r_scaling)
 
 if(params.r_analyses){
     process tag_density {
         tag "$LibName"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, 
-            LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_before_R_lib
-        file(r_function) from ${params.r_scaling}
+            LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_R_TD
+        file(r_function) from params.r_scaling
         output:
         file(temp_file)
         file("r_file_2_run.R")
