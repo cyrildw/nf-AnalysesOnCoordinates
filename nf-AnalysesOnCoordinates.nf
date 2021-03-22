@@ -391,7 +391,7 @@ if(params.r_analyses){
     process tag_density {
         tag "$LibName"
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, row.BedExtension, row.BedExtValLeft,row.BedExtValRight,
+        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight,
             LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_R_TD
         file(r_function) from params.r_scaling
         output:
