@@ -382,7 +382,7 @@ if(params.deeptools_analyses){
     -grouped elements
     -quantiles
 - Outputing R objects (and R scripts ?)*/
-
+/*
 if(params.r_analyses){
     process tag_density {
         tag "$LibName"
