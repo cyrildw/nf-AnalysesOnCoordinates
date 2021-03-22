@@ -19,7 +19,7 @@ Channel
                     row.LibIsControl,
                     row.LibControl ]
                     }
-   .into { design_bigwig_csv; ch_before_dt_lib}
+   .into { design_bigwig_csv; ch_before_dt_lib; ch_before_R_lib}
 
 Channel
     .fromPath(params.bed_design)
@@ -35,7 +35,7 @@ Channel
 		row.BedExtValLeft,     // Used by R, how much of the FinalLength should the upstream extension represent
         row.BedExtValRight]     // Used by R, how much of the FinalLength should the upstream extension represent
         }
-    .into { design_bed_csv; ch_before_dt_bed }
+    .into { design_bed_csv; ch_before_dt_bed; ch_before_R_bed }
 /* Macs analyses contains : 
     -Channel split as control or sample
     -Channel cross to have sample & control on same channel emission
@@ -382,6 +382,8 @@ if(params.deeptools_analyses){
     -grouped elements
     -quantiles
 - Outputing R objects (and R scripts ?)*/
+ch_before_R_bed.combine(ch_before_R_lib).view()
+    //.set{ch_R_channel}
 /*
 if(params.r_analyses){
     process tag_density {
