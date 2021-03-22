@@ -249,7 +249,7 @@ if(params.deeptools_analyses){
         val(BedName) into ch_computeMatrix_bedname
         script:
         
-        if(!$BedReferencePoint)
+        if(BedReferencePoint=='false')
             """
             computeMatrix scale-regions \
             -S ${Files.join(' ')} \
