@@ -27,11 +27,13 @@ Channel
     .map { row -> [row.BedName,
 		file("$params.input_dir/$row.BedFile", checkIfExists: true),
         file("$params.input_dir/$row.BedGroupFile"),
-		row.BedPref,
-		row.BedFls,
-		row.BedExts,
-		row.BedExtls,
-		row.BedExtvs ]
+		row.BedReferencePoint, //Used by Deeptools in opposition to "scale-region"
+		row.BedExtLengthLeft,  //Used by Deeptools and R to extend the bed coordinates upstream
+		row.BedExtLengthRight, //Used by Deeptools and R to extend the bed coordinates downstream
+		row.BedFinalLength,    //Used by Deeptools and R to set the bed coordinates final length
+		row.BedExtension,      // Should the bed coordinates be extended
+		row.BedExtValLeft,     // Used by R, how much of the FinalLength should the upstream extension represent
+        row.BedExtValRight]     // Used by R, how much of the FinalLength should the upstream extension represent
         }
     .into { design_bed_csv; ch_before_dt_bed }
 /* Macs analyses contains : 
@@ -69,16 +71,17 @@ if(params.macs2_analyses){
     }
 }
 */
+
 /*Deeptools analyses contains :
-- MultiBigwigSymmary & PlotCorrelation
-    -Should plot correlation & Scatterplot
-    -see for --removeOutliers
-- ComputeMatrix & PlotHeatmap
-    -For ComputeMatrix
+    - MultiBigwigSymmary & PlotCorrelation
+        -Should plot correlation & Scatterplot
+        -see for --removeOutliers
+    - ComputeMatrix & PlotHeatmap
+     -For ComputeMatrix
         -generate bedfiles from groups
         -take scale-region/reference-point into account.
 
-    -For PlotHeatmap: 
+     -For PlotHeatmap: 
         -account for plotType (lines, fill, se, std)
         --linesAtTickMarks ?
 
@@ -108,8 +111,7 @@ done
 */
 
 if(params.deeptools_analyses){
-
-/* Deeptools process requires
+/* Deeptools process requires :
     -bw & Bed files for computation
     -labels & BedName for plotting
 */
@@ -123,12 +125,12 @@ if(params.deeptools_analyses){
         }
 
         input:
-        tuple BedName, file(BedFile), file(BedGroupFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from ch_before_dt_bed
+        tuple BedName, file(BedFile), file(BedGroupFile) from ch_before_dt_bed
         output:
         files "*.txt"
         files "*.bed"
-        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed") into (ch_test,ch_dt_bedGroup_computeMatrix)
-        tuple BedName, file(BedFile) into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed"),BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength into (ch_test,ch_dt_bedGroup_computeMatrix)
+        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
 
         script:
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
@@ -160,20 +162,22 @@ if(params.deeptools_analyses){
     //ch_before_dt_bed
     //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
 
-    ch_before_dt_lib.map {it -> [ it[0], it[3]]}
+    ch_before_dt_lib.map {it -> [ it[0], it[3]]} // From the bigwig channel : sending names into a labels-subchannel and sending files into a files-subchannel
         .multiMap { it ->
                     labels: it[0]
                     files: it[1]
                 }
         .set{ch_dt_input}
 
-    ch_dt_input.labels.collect()
+    ch_dt_input.labels.collect() //Using the collect() method to have a single list of values  which will be used in the next processes
         .into {ch_dt_labels_plotCor; ch_dt_labels_plotHeatmap; ch_dt_labels_groupHeatmap; test3_ch}
-    ch_dt_input.files.collect()
+    ch_dt_input.files.collect() //Using the collect() method to have a single list of values which will be used in the next processes
         .into{ch_dt_files_multiBWsummary; ch_dt_files_computeMatrix; ch_dt_files_groupcomputeMatrix; test4_ch}
 
 
     process dt_MultiBWsummary {
+        // Computes the npz Matrix file required for the dt_PlotCorrelation process.
+        // The npz file is saved in the DeeptoolsData directory
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -197,6 +201,7 @@ if(params.deeptools_analyses){
         """
     }
     process dt_PlotCorrelation {
+        // Produce the Correlation matrix graphical output.
         tag "$BedName"
         publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
@@ -227,6 +232,7 @@ if(params.deeptools_analyses){
     // Adujst for reference point
     
     process dt_ComputeMatrix {
+        // Compute the matrix file (.gz)
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -234,25 +240,43 @@ if(params.deeptools_analyses){
             if (filename.endsWith('.gz')) "./$filename"
             else null
         }
+
         input:
-        tuple BedName, file(BedFile) from ch_dt_bed_computeMatrix
+        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength  from ch_dt_bed_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
         output:
         file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
         val(BedName) into ch_computeMatrix_bedname
         script:
+        
+        if(!BedReferencePoint){
         """
         computeMatrix scale-regions \
         -S ${Files.join(' ')} \
         -R ${BedFile} \
-        -b 0 \
-        -a 0 \
-        -m 1000 \
+        -b ${BedExtLengthLeft} \
+        -a ${BedExtLengthRight} \
+        -m ${BedFinalLength} \
         --skipZeros \
         -p ${task.cpus} \
         -o dt_ComputeMatrix.${BedName}.gz
         """
+        }
+        
+        else{
+        """
+        computeMatrix reference-point \
+        -S ${Files.join(' ')} \
+        -R ${BedFile} \
+        -b ${BedExtLengthLeft} \
+        -a ${BedExtLengthRight} \
+         --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.${BedName}.gz
+        """
+        }
     }
+
     // Adjust for :
     //    - groups
     //    - kmean
@@ -297,7 +321,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles) from ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_groupcomputeMatrix
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
@@ -307,23 +331,41 @@ if(params.deeptools_analyses){
         
         when:
         BedGrpFile.size() != 0
-
+        script:
+        
+        if(!BedReferencePoint){
         """
         computeMatrix scale-regions \
         -S ${Files.join(' ')} \
         -R ${BedGrpBedFiles.join(' ')} \
-        -b 0 \
-        -a 0 \
-        -m 1000 \
+        -b ${BedExtLengthLeft} \
+        -a ${BedExtLengthRight} \
+        -m ${BedFinalLength} \
         --skipZeros \
         -p ${task.cpus} \
         -o dt_ComputeMatrix.Group.${BedName}.gz
+        """
+        }
+        
+        else{
+        """
+        computeMatrix reference-point \
+        -S ${Files.join(' ')} \
+        -R ${BedGrpBedFiles.join(' ')} \
+        -b ${BedExtLengthLeft} \
+        -a ${BedExtLengthRight} \
+         --skipZeros \
+        -p ${task.cpus} \
+        -o dt_ComputeMatrix.Group.${BedName}.gz
+        """
+        }
 
+        """
         plotHeatmap \
         --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
         -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
-        --startLabel '1' \
-        --endLabel '0' \
+        --startLabel '-${BedExtLengthLeft}' \
+        --endLabel '${BedExtLengthRight}' \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
@@ -341,8 +383,8 @@ if(params.deeptools_analyses){
     -all elements
     -grouped elements
     -quantiles
-- Outputing R objects (and R scripts ?)
-
+- Outputing R objects (and R scripts ?)*/
+/*
 if(params.r_analyses){
     process tag_density {
         tag "$LibName"
@@ -360,7 +402,7 @@ if(params.r_analyses){
         echo "#!/usr/bin/env Rscript
         source ${r_scaling_function.R}
         finalL=${BedFinalLength}
-        ext=${BedExtension}
+        ext=TRUE;if(${BedExtension}=='false'){ext=FALSE}
         extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
         extVL=${BedExtValLeft};extVR=${BedExtValRight};
         t=as.list(read.table(temp_file, stringsAsFactor=FALSE, header=FALSE))
@@ -382,8 +424,8 @@ if(params.r_analyses){
 
     }
 
-}
-*/
+}*/
+/**/
 
 
 /*process toto {
@@ -392,7 +434,7 @@ if(params.r_analyses){
     input:
     val Labels from ch_dt_labels
     val Files from ch_dt_files
-    tuple BedName, file(BedFile), BedPref, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
+    tuple BedName, file(BedFile), BedReferencePoint, BedFls, BedExts, BedExtls, BedExtvs from design_bed_csv.take(1)
     """
     echo "${BedName} \n ${BedFile} \n ${Labels.join(' ')} \n ${Files.join(' ')}
     """

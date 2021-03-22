@@ -1,3 +1,5 @@
-BedName;BedFile;BedGroupFile;BedPref;BedFls;BedExts;BedExtls;BedExtvs
-TRANSCRIPTS_EXT;TSS_TES_steinmetz_jacquier.mRNA.500bp_ext.bed;testgroup.txt;mRNA.500bp_ext;100;TRUE;500;10
-PROMOTER_EXT;Prom-Div_intergenic_regions_prot-cod_noClass3.300bp_ext.bed;;Prom-Div_ProtCod_noClass3_ext;100;TRUE;300;10
+BedName;BedFile;BedGroupFile;BedReferencePoint;BedExtLengthLeft;BedExtLengthRight;BedFinalLength;BedExtension;BedExtValLeft;BedExtValRight
+TRANSCRIPTS;TSS_TES_steinmetz_jacquier.mRNA.bed;testgroup.txt;false;500;500;100;true;10;10
+TRANSCRIPTS_EXT;TSS_TES_steinmetz_jacquier.mRNA.500bp_ext.bed;testgroup.txt;false;0;0;100;false;0;0
+PROMOTER_EXT;Prom-Div_intergenic_regions_prot-cod_noClass3.300bp_ext.bed;;false;0;0;100;false;0;0
+TSS;TSS_steinmetz_jacquier.mRNA.bed;;true;500;500;100;true;10;10
