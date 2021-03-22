@@ -298,8 +298,8 @@ if(params.deeptools_analyses){
         plotHeatmap \
         --matrixFile ${Matrix} \
         -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
-        --startLabel '1' \
-        --endLabel '0' \
+        --startLabel 'st' \
+        --endLabel 'end' \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
@@ -331,32 +331,32 @@ if(params.deeptools_analyses){
         BedGrpFile.size() != 0
         script:
         
-        if(!BedReferencePoint){
-        """
-        computeMatrix scale-regions \
-        -S ${Files.join(' ')} \
-        -R ${BedGrpBedFiles.join(' ')} \
-        -b ${BedExtLengthLeft} \
-        -a ${BedExtLengthRight} \
-        -m ${BedFinalLength} \
-        --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.Group.${BedName}.gz
-        """
-        }
+        if(BedReferencePoint=='false')
+            """
+            computeMatrix scale-regions \
+            -S ${Files.join(' ')} \
+            -R ${BedGrpBedFiles.join(' ')} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            -m ${BedFinalLength} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.Group.${BedName}.gz
+            """
         
-        else{
-        """
-        computeMatrix reference-point \
-        -S ${Files.join(' ')} \
-        -R ${BedGrpBedFiles.join(' ')} \
-        -b ${BedExtLengthLeft} \
-        -a ${BedExtLengthRight} \
-         --skipZeros \
-        -p ${task.cpus} \
-        -o dt_ComputeMatrix.Group.${BedName}.gz
-        """
-        }
+        
+        else
+            """
+            computeMatrix reference-point \
+            -S ${Files.join(' ')} \
+            -R ${BedGrpBedFiles.join(' ')} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.Group.${BedName}.gz
+            """
+        
 
         """
         plotHeatmap \
@@ -382,13 +382,13 @@ if(params.deeptools_analyses){
     -grouped elements
     -quantiles
 - Outputing R objects (and R scripts ?)*/
-/*
+
 if(params.r_analyses){
     process tag_density {
         tag "$LibName"
         input:
         combinedLib_and_Bed from some_channel
-        file(r_scaling_function.R) from ${params.r_scaling}
+        file(r_function) from ${params.r_scaling}
         output:
         file(temp_file)
         file("r_file_2_run.R")
@@ -398,7 +398,7 @@ if(params.r_analyses){
         """
         get_tag_density -f ${BwFile} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
         echo "#!/usr/bin/env Rscript
-        source ${r_scaling_function.R}
+        source ${r_function}
         finalL=${BedFinalLength}
         ext=TRUE;if(${BedExtension}=='false'){ext=FALSE}
         extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
@@ -422,7 +422,7 @@ if(params.r_analyses){
 
     }
 
-}*/
+}
 /**/
 
 
