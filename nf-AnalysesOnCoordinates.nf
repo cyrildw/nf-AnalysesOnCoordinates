@@ -384,12 +384,13 @@ if(params.deeptools_analyses){
 - Outputing R objects (and R scripts ?)*/
 ch_before_R_bed.combine(ch_before_R_lib).view()
     //.set{ch_R_channel}
-/*
+
 if(params.r_analyses){
     process tag_density {
         tag "$LibName"
         input:
-        combinedLib_and_Bed from some_channel
+        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, 
+            LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_before_R_lib
         file(r_function) from ${params.r_scaling}
         output:
         file(temp_file)
@@ -398,7 +399,7 @@ if(params.r_analyses){
         
         script:
         """
-        get_tag_density -f ${BwFile} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
+        get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
         echo "#!/usr/bin/env Rscript
         source ${r_function}
         finalL=${BedFinalLength}
@@ -422,7 +423,7 @@ if(params.r_analyses){
     /* Must get all bed-associated R file (containing data)
     process combine_R {
 
-    }
+    }*/
 
 }
 /**/
