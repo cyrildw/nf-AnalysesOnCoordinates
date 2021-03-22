@@ -389,7 +389,7 @@ ch_before_R_bed.combine(ch_before_R_lib)
 
 if(params.r_analyses){
     process tag_density {
-        tag "$LibName"
+        tag "$LibName - $BedName"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight,
             LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_R_TD
@@ -418,7 +418,7 @@ if(params.r_analyses){
         t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
         colnames(t_scaled)=t[['Q_id']]
         save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
-        R --vanilla r_file_2_run.R
+        R --vanilla --slave --quiet r_file_2_run.R
         """
     }
 
