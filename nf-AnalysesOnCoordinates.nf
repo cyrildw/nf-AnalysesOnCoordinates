@@ -416,22 +416,23 @@ if(params.r_analyses){
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
         .into{ch_R_TD; ch_R_test}
 
-ch_R_test.view()
+    ch_R_test.view()
     process tag_density {
         tag "$LibName - $BedName"
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight,
-            LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_R_TD
+        tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight,
+            LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_TD
         file(r_function) from Channel.fromPath(params.r_scaling)
         output:
         file(temp_file)
-        file("r_file_2_run.R")
-        file("${LibName}.${BedName}.R")
+        //file("r_file_2_run.R")
+        //file("${LibName}.${BedName}.R")
         
         script:
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
-        echo "#!/usr/bin/env Rscript
+        """
+        /*echo "#!/usr/bin/env Rscript
         source('${r_function}')
         finalL=${BedFinalLength}
         ext='${BedExtension}'
@@ -450,7 +451,7 @@ ch_R_test.view()
         colnames(t_scaled)=t[['Q_id']]
         save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
         Rscript r_file_2_run.R
-        """
+        """*/
     }
 
     /* Must get all bed-associated R file (containing data)
