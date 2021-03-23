@@ -433,7 +433,7 @@ if(params.r_analyses){
         echo "#!/usr/bin/env Rscript
         source('${r_function}')
         finalL=${BedFinalLength}
-        ext='${BedExtension}''
+        ext='${BedExtension}'
         if(ext=='false'){ext=FALSE}
         if(ext=='true'){ext=TRUE}
         extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
