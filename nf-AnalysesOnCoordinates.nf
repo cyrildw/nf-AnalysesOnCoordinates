@@ -418,18 +418,19 @@ if(params.r_analyses){
         
     Channel.fromPath(params.r_scaling) // Requires to combine the r_scaling file with the bed n lib channel
         .combine(ch_R_bed_n_lib)
-        .set(ch_R_rfunc_bed_lib)
+        .set{ch_R_rfunc_bed_lib}
 
 
     process tag_density {
         tag "$LibName - $BedName"
         input:
-        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_TD
+        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
+                LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_rfunc_bed_lib
         
         output:
         file(temp_file)
-        //file("r_file_2_run.R")
-        //file("${LibName}.${BedName}.R")
+        file("r_file_2_run.R")
+        file("${LibName}.${BedName}.R")
         
         script:
         """
