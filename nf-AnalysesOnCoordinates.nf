@@ -229,7 +229,7 @@ if(params.deeptools_analyses){
         --labels ${Labels.join(' ')}
         """
     }
-    // Adujst for reference point
+
     
     process dt_ComputeMatrix {
         // Compute the matrix file (.gz)
@@ -374,26 +374,54 @@ if(params.deeptools_analyses){
 
 
 /*R analyses includes : 
-- Combine all libraries with all bedfiles
-- Getting Tag Density over the bed files
-- Converting all density tables to R object with scaling
+TEST    - Create the bed files if it requires some bp extension.
+OK      - Combine all libraries with all bedfiles
+OK      - Getting Tag Density over the bed files
+TEST    - Converting all density tables to R object with scaling
 - Producing combined graphics for
     -all elements
     -grouped elements
     -quantiles
 - Outputing R objects (and R scripts ?)*/
-ch_before_R_bed.combine(ch_before_R_lib)
-    .set{ch_R_TD}
 
 //r_func=Channel.fromPath(params.r_scaling)
 
+
+
+
+
 if(params.r_analyses){
+
+    process create_bed_with_ext {
+        tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
+        input:
+        tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
+        ouput:
+        tuple BedName, file("${BedFile.baseName}.ext.bed"),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight into ch_for_R_ext_Bed
+        file("${BedFile.baseName}.ext.bed")
+
+        script:
+        if(BedExtension=='true')
+            """
+            awk '{print \$1"\\t"\$2-${BedExtLengthLeft}"\\t"\$3+${BedExtLengthRight}"\\t"\$4"\\t"\$5"\\t"\$6}' ${BedFile} > ${BedFile.baseName}.ext.bed
+            """
+        else
+            """
+            cp ${BedFile}  ${BedFile.baseName}.ext.bed
+            """
+        
+    }
+
+
+    ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
+        .set{ch_R_TD}
+
     process tag_density {
         tag "$LibName - $BedName"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight,
             LibName,file(LibBam), file(LibBai) ,file(LibBW), LibSequenced,LibMapped,LibUnique,LibInsertSize,LibQpcrNorm,LibType,LibProj,LibExp,LibCondition,LibOrder,LibIsControl,LibControl   from ch_R_TD
-        file(r_function) from params.r_scaling
+        file(r_function) from Channel.fromPath(params.r_scaling)
         output:
         file(temp_file)
         file("r_file_2_run.R")
