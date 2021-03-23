@@ -392,7 +392,7 @@ TEST    - Converting all density tables to R object with scaling
 
 if(params.r_analyses){
 
-    /*process create_bed_with_ext {
+    process create_bed_with_ext {
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
@@ -414,18 +414,18 @@ if(params.r_analyses){
 
 
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
-        .set{ch_R_TD}
+        .set{ch_R_bed_n_lib}
+        
+    Channel.fromPath(params.r_scaling) // Requires to combine the r_scaling file with the bed n lib channel
+        .combine(ch_R_bed_n_lib)
+        .set(ch_R_rfunc_bed_lib)
 
-    //ch_R_test.view()
-    */
-     ch_before_R_bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
-        .set{ch_R_TD}
 
     process tag_density {
         tag "$LibName - $BedName"
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_TD
-        //file(r_function) from Channel.fromPath(params.r_scaling)
+        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_TD
+        
         output:
         file(temp_file)
         //file("r_file_2_run.R")
@@ -434,9 +434,8 @@ if(params.r_analyses){
         script:
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
-        """
-        /*echo "#!/usr/bin/env Rscript
-        source('${r_function}')
+        echo "#!/usr/bin/env Rscript
+        source('${R_function}')
         finalL=${BedFinalLength}
         ext='${BedExtension}'
         if(ext=='false'){ext=FALSE}
@@ -454,7 +453,7 @@ if(params.r_analyses){
         colnames(t_scaled)=t[['Q_id']]
         save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
         Rscript r_file_2_run.R
-        """*/
+        """
     }
 
     /* Must get all bed-associated R file (containing data)
