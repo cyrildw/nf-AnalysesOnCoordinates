@@ -392,7 +392,7 @@ TEST    - Converting all density tables to R object with scaling
 
 if(params.r_analyses){
 
-    process create_bed_with_ext {
+    /*process create_bed_with_ext {
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
@@ -417,7 +417,10 @@ if(params.r_analyses){
         .set{ch_R_TD}
 
     //ch_R_test.view()
-    
+    */
+     ch_before_R_bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
+        .set{ch_R_TD}
+
     process tag_density {
         tag "$LibName - $BedName"
         input:
