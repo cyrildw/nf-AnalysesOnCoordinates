@@ -396,7 +396,7 @@ if(params.r_analyses){
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
-        ouput:
+        output:
         tuple BedName, file("${BedFile.baseName}.ext.bed"),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight into ch_for_R_ext_Bed
         file("${BedFile.baseName}.ext.bed")
 
@@ -431,22 +431,24 @@ if(params.r_analyses){
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
         echo "#!/usr/bin/env Rscript
-        source ${r_function}
+        source('${r_function}')
         finalL=${BedFinalLength}
-        ext=TRUE;if(${BedExtension}=='false'){ext=FALSE}
+        ext='${BedExtension}''
+        if(ext=='false'){ext=FALSE}
+        if(ext=='true'){ext=TRUE}
         extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
         extVL=${BedExtValLeft};extVR=${BedExtValRight};
-        t=as.list(read.table(temp_file, stringsAsFactor=FALSE, header=FALSE))
+        t=as.list(read.table('temp_file', stringsAsFactor=FALSE, header=TRUE))
         names(t)=c('Q_id', 'Strand', 'PerBP')
         t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
         for(k in 1:length(t[['Strand']])){ 
-            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[["Splt_PerBP"]][[k]])            }
+            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[['Splt_PerBP']][[k]])            }
         } # Reversing order for minus strand
         t_scaled=c()
         t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
         colnames(t_scaled)=t[['Q_id']]
         save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
-        R --vanilla --slave --quiet r_file_2_run.R
+        Rscript r_file_2_run.R
         """
     }
 
