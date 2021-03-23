@@ -414,9 +414,10 @@ if(params.r_analyses){
 
 
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
-        .into{ch_R_TD; ch_R_test}
+        .set{ch_R_TD}
 
-    ch_R_test.view()
+    //ch_R_test.view()
+    
     process tag_density {
         tag "$LibName - $BedName"
         input:
