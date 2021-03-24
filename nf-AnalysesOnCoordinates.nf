@@ -465,7 +465,8 @@ TODO    - output a channel with the BedName, LibName, r_table
         t_scaled=c()
         t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
         colnames(t_scaled)=t[['Q_id']]
-        save(x=t_scaled, file='${LibName}.${BedName}.R')" > r_file_2_run.R
+        #save(x=t_scaled, file='${LibName}.${BedName}.R')
+        write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")" > r_file_2_run.R
         Rscript r_file_2_run.R
         """
     }
@@ -480,9 +481,11 @@ TODO    - output a channel with the BedName, LibName, r_table
         script:
         """
         echo "#!/usr/bin/env Rscript
-        '${BedName}'
-        c('${LibNames.join('\',\'')})
-        c('${R_files.join('\',\'')})
+        bedName='${BedName}'
+        libNames=c('${LibNames.join('\',\'')}')
+        libFiles=c('${R_files.join('\',\'')}')
+        sortby=order(libNames);
+        libNames=libNames[sortby]; libFiles=libFiles[sortby]
         " > r_file_2_run.R
         """
 
