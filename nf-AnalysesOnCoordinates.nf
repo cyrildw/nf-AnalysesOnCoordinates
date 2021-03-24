@@ -476,7 +476,6 @@ TODO    - output a channel with the BedName, LibName, r_table
         input: 
         tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
         output:
-        stdout
         file("r_file_2_run.R")
         script:
         """
