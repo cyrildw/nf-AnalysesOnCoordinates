@@ -487,7 +487,7 @@ TODO    - output a channel with the BedName, LibName, r_table
         " > r_file_2_run.R
         """
 
-    }*/
+    }
 
 }
 /**/
