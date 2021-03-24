@@ -374,10 +374,10 @@ if(params.deeptools_analyses){
 
 
 /*R analyses includes : 
-TEST    - Create the bed files if it requires some bp extension.
+VERIF    - Create the bed files if it requires some bp extension.
 OK      - Combine all libraries with all bedfiles
 OK      - Getting Tag Density over the bed files
-TEST    - Converting all density tables to R object with scaling
+OK    - Converting all density tables to R object with scaling
 - Producing combined graphics for
     -all elements
     -grouped elements
@@ -393,6 +393,10 @@ TEST    - Converting all density tables to R object with scaling
 if(params.r_analyses){
 
     process create_bed_with_ext {
+    /*In case the bed conf requires extension on the flanking regions, this process modifies the bed file accordingly.
+TODO    - save the bedfile
+TODO    - remove the unnecessary fields from input.
+*/
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
@@ -422,6 +426,14 @@ if(params.r_analyses){
 
 
     process tag_density {
+    /* Get the read density (from bw file) on coordinates (bed file) using get_tag_density script.
+OK      - get_tag_density outputs only 3 columns of interest : for each feature : ID, strand, density for each base pair.
+OK      - create a R-script allowing to scale each feature to a fixed length set by BedFinalLength
+OK      - execute the R-script to only save the final table of dimension nb_of_bed_coordinates x BedFinalLength
+TODO    - save the R_table
+TODO    - output a channel with the BedName, LibName, r_table
+
+    */
         tag "$LibName - $BedName"
         input:
         tuple file(R_function), BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
@@ -431,6 +443,7 @@ if(params.r_analyses){
         file(temp_file)
         file("r_file_2_run.R")
         file("${LibName}.${BedName}.R")
+        tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
         
         script:
         """
@@ -456,8 +469,9 @@ if(params.r_analyses){
         Rscript r_file_2_run.R
         """
     }
+    ch_scaled_R.view()
+    /* For each bed, get the R_table files and LibName
 
-    /* Must get all bed-associated R file (containing data)
     process combine_R {
 
     }*/
