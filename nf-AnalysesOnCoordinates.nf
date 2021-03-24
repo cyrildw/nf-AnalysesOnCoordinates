@@ -480,7 +480,7 @@ TODO    - output a channel with the BedName, LibName, r_table
         script:
         """
         echo "#!/usr/bin/env Rscript
-        '${BedName.join}
+        '${BedName}'
         c('${LibNames.join('\',\'')})
         c('${R_files.join('\',\'')})
         " > r_file_2_run.R
