@@ -469,10 +469,23 @@ TODO    - output a channel with the BedName, LibName, r_table
         Rscript r_file_2_run.R
         """
     }
-    ch_scaled_R.view()
-    /* For each bed, get the R_table files and LibName
-
-    process combine_R {
+    ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
+    /* For each bed, get the R_table files and LibName*/
+    process combine_R_per_bed {
+        tag "$BedName"
+        input: 
+        tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
+        output:
+        stdout
+        file("r_file_2_run.R")
+        script:
+        """
+        echo "#!/usr/bin/env Rscript
+        ${BedName}
+        ${LibNames}
+        ${R_files}
+        " > r_file_2_run.R
+        """
 
     }*/
 
