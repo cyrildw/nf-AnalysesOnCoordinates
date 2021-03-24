@@ -447,7 +447,7 @@ if(params.r_analyses){
         names(t)=c('Q_id', 'Strand', 'PerBP')
         t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
         for(k in 1:length(t[['Strand']])){ 
-            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[['Splt_PerBP']][[k]])            }
+            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[['Splt_PerBP']][[k]])}
         } # Reversing order for minus strand
         t_scaled=c()
         t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
