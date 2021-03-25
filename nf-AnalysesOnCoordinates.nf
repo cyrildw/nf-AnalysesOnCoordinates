@@ -430,8 +430,8 @@ TODO    - remove the unnecessary fields from input.
 OK      - get_tag_density outputs only 3 columns of interest : for each feature : ID, strand, density for each base pair.
 OK      - create a R-script allowing to scale each feature to a fixed length set by BedFinalLength
 OK      - execute the R-script to only save the final table of dimension nb_of_bed_coordinates x BedFinalLength
-TODO    - save the R_table
-TODO    - output a channel with the BedName, LibName, r_table
+OK      - save the R_table
+OK      - output a channel with the BedName, LibName, r_table
 
     */
         tag "$LibName - $BedName"
@@ -444,9 +444,7 @@ TODO    - output a channel with the BedName, LibName, r_table
         file("r_file_2_run.R")
         file("${LibName}.${BedName}.R")
         tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
-        //echo "#!/usr/bin/env Rscript
-        //Rscript r_file_2_run.R
-        
+         
         script:
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
@@ -483,15 +481,20 @@ TODO    - output a channel with the BedName, LibName, r_table
         tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
         output:
         file("r_file_2_run.R")
+        file("${BedName}.scaledData.R")
         script:
         """
-        echo "#!/usr/bin/env Rscript
+        echo "R --no-save --no-restore --slave <<RSCRIPT
+        R.Version()
         bedName='${BedName}'
         libNames=c('${LibNames.join('\',\'')}')
         libFiles=c('${R_files.join('\',\'')}')
         sortby=order(libNames);
         libNames=libNames[sortby]; libFiles=libFiles[sortby]
+        bedData=list();for( i in 1:length(libNames)){load(libFiles[i]); bedData[[libNames[i]]]=t_scaled}
+        save(x=bedData, file='${BedName}.scaledData.R')
         " > r_file_2_run.R
+        bash r_file_2_run.R
         """
 
     }
