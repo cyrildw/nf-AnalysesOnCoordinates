@@ -451,6 +451,7 @@ TODO    - output a channel with the BedName, LibName, r_table
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
         echo "R --no-save --no-restore --slave <<RSCRIPT
+        R.Version()
         source('${R_function}')
         finalL=${BedFinalLength}
         ext='${BedExtension}'
