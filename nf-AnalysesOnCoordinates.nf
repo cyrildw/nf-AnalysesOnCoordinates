@@ -21,6 +21,7 @@ Channel
                     }
    .into { design_bigwig_csv; ch_before_dt_lib; ch_before_R_lib}
 
+//BedChannel : add an RFinalLength(100) and DTFinalLength (variable)
 Channel
     .fromPath(params.bed_design)
     .splitCsv(header:true, sep:";")
