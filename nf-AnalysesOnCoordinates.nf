@@ -398,6 +398,12 @@ TODO    - save the bedfile
 TODO    - remove the unnecessary fields from input.
 */
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.bed')) "./BedFiles/$filename"
+            else null
+        }
+
         input:
         tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
         output:
@@ -477,6 +483,12 @@ OK      - output a channel with the BedName, LibName, r_table
     /* For each bed, get the R_table files and LibName*/
     process combine_R_per_bed {
         tag "$BedName"
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.scaledData.R')) "./RData/$filename"
+            else null
+        }
+
         input: 
         tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
         output:
