@@ -444,11 +444,13 @@ TODO    - output a channel with the BedName, LibName, r_table
         file("r_file_2_run.R")
         file("${LibName}.${BedName}.R")
         tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
+        //echo "#!/usr/bin/env Rscript
+        //Rscript r_file_2_run.R
         
         script:
         """
         get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
-        echo "#!/usr/bin/env Rscript
+        echo "R --no-save --no-restore --slave <<RSCRIPT
         source('${R_function}')
         finalL=${BedFinalLength}
         ext='${BedExtension}'
@@ -466,8 +468,10 @@ TODO    - output a channel with the BedName, LibName, r_table
         t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
         colnames(t_scaled)=t[['Q_id']]
         #save(x=t_scaled, file='${LibName}.${BedName}.R')
-        write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")" > r_file_2_run.R
-        Rscript r_file_2_run.R
+        write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+        RSCRIPT
+        " > r_file_2_run.R
+        bash r_file_2_run.R
         """
     }
     ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
