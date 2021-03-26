@@ -259,6 +259,7 @@ if(params.deeptools_analyses){
             -b ${BedExtLengthLeft} \
             -a ${BedExtLengthRight} \
             -m ${BedDTlength} \
+            --labelRotation 45 \
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.${BedName}.gz
@@ -302,6 +303,8 @@ if(params.deeptools_analyses){
         -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
         --startLabel 'st' \
         --endLabel 'end' \
+        --refPointLabel ${BedName} \
+        --labelRotation 45 \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
@@ -366,6 +369,8 @@ if(params.deeptools_analyses){
         -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
         --startLabel '-${BedExtLengthLeft}' \
         --endLabel '${BedExtLengthRight}' \
+        --refPointLabel ${BedName} \
+        --labelRotation 45 \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
