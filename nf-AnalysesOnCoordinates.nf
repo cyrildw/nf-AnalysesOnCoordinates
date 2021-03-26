@@ -304,6 +304,7 @@ if(params.deeptools_analyses){
         --endLabel 'end' \
         --refPointLabel 0 \
         --labelRotation ${params.deeptools_labelRotation} \
+        --linesAtTickMarks \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
@@ -369,6 +370,7 @@ if(params.deeptools_analyses){
         --startLabel '-${BedExtLengthLeft}' \
         --endLabel '${BedExtLengthRight}' \
         --refPointLabel 0 \
+        --linesAtTickMarks \
         --labelRotation ${params.deeptools_labelRotation} \
         --yMin 0 \
         --xAxisLabel ${BedName} \
