@@ -259,7 +259,6 @@ if(params.deeptools_analyses){
             -b ${BedExtLengthLeft} \
             -a ${BedExtLengthRight} \
             -m ${BedDTlength} \
-            --labelRotation 45 \
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.${BedName}.gz
