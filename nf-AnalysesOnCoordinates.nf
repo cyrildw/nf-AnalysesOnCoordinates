@@ -28,10 +28,11 @@ Channel
     .map { row -> [row.BedName,
 		file("$params.input_dir/$row.BedFile", checkIfExists: true),
         file("$params.input_dir/$row.BedGroupFile"),
-		row.BedReferencePoint, //Used by Deeptools in opposition to "scale-region"
+		row.BedDTlength, //Used by Deeptools for -m option in plot heatmap
+        row.BedReferencePoint, //Used by Deeptools in opposition to "scale-region"
 		row.BedExtLengthLeft,  //Used by Deeptools and R to extend the bed coordinates upstream
 		row.BedExtLengthRight, //Used by Deeptools and R to extend the bed coordinates downstream
-		row.BedFinalLength,    //Used by Deeptools and R to set the bed coordinates final length
+		row.BedRFinalLength,    //Used by R to set the final length of the vector
 		row.BedExtension,      // Should the bed coordinates be extended
 		row.BedExtValLeft,     // Used by R, how much of the FinalLength should the upstream extension represent
         row.BedExtValRight]     // Used by R, how much of the FinalLength should the upstream extension represent
@@ -126,12 +127,12 @@ if(params.deeptools_analyses){
         }
 
         input:
-        tuple BedName, file(BedFile), file(BedGroupFile),BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension,BedExtValLeft, BedExtValRight from ch_before_dt_bed
+        tuple BedName, file(BedFile), file(BedGroupFile),BedDTlength,BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension,BedExtValLeft, BedExtValRight from ch_before_dt_bed
         output:
         files "*.txt"
         files "*.bed"
-        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed"),BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength into (ch_test,ch_dt_bedGroup_computeMatrix)
-        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
+        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed"),BedDTlength,BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength into (ch_test,ch_dt_bedGroup_computeMatrix)
+        tuple BedName, file(BedFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
 
         script:
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
@@ -187,7 +188,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength from ch_dt_bed_multiBWsummary
+        tuple BedName, file(BedFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bed_multiBWsummary
         file(Files) from ch_dt_files_multiBWsummary
         output:
         file("dt_MultiBWsummary.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
@@ -243,7 +244,7 @@ if(params.deeptools_analyses){
         }
 
         input:
-        tuple BedName, file(BedFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength  from ch_dt_bed_computeMatrix
+        tuple BedName, file(BedFile), BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength  from ch_dt_bed_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
         output:
         file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
@@ -257,7 +258,7 @@ if(params.deeptools_analyses){
             -R ${BedFile} \
             -b ${BedExtLengthLeft} \
             -a ${BedExtLengthRight} \
-            -m ${BedFinalLength} \
+            -m ${BedDTlength} \
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.${BedName}.gz
@@ -320,7 +321,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength from ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_groupcomputeMatrix
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
@@ -339,7 +340,7 @@ if(params.deeptools_analyses){
             -R ${BedGrpBedFiles.join(' ')} \
             -b ${BedExtLengthLeft} \
             -a ${BedExtLengthRight} \
-            -m ${BedFinalLength} \
+            -m ${BedDTlength} \
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.Group.${BedName}.gz
@@ -406,9 +407,9 @@ TODO    - remove the unnecessary fields from input.
         }
 
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
+        tuple BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft,BedExtValRight from ch_before_R_bed
         output:
-        tuple BedName, file("${BedFile.baseName}.ext.bed"),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft,BedExtValRight into ch_for_R_ext_Bed
+        tuple BedName, file("${BedFile.baseName}.ext.bed"),file(BedGrpFile), BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft,BedExtValRight into ch_for_R_ext_Bed
         file("${BedFile.baseName}.ext.bed")
 
         script:
@@ -443,7 +444,7 @@ OK      - output a channel with the BedName, LibName, r_table
     */
         tag "$LibName - $BedName"
         input:
-        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile), BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
+        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_rfunc_bed_lib
         
         output:
@@ -458,7 +459,7 @@ OK      - output a channel with the BedName, LibName, r_table
         echo "R --no-save --no-restore --slave <<RSCRIPT
         R.Version()
         source('${R_function}')
-        finalL=${BedFinalLength}
+        finalL=${BedRFinalLength}
         ext='${BedExtension}'
         if(ext=='false'){ext=FALSE}
         if(ext=='true'){ext=TRUE}
