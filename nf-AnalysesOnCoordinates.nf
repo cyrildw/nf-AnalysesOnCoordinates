@@ -480,12 +480,12 @@ TEST    - send the initial file to the ch_ToScale channel
         }
 
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
+        tuple BedName, file(BedFile), file(BedGrpFile), BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight,
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_bed_n_lib
         
         output:
         file("${LibName}.${BedName}.avgdensity.bed")
-        tuple file("${LibName}.${BedName}.tagdensity_output"), LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
+        tuple file("${LibName}.${BedName}.tagdensity_output"), LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight into ch_ToScale
         
         script:
         """
