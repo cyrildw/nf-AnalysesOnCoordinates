@@ -482,11 +482,11 @@ TEST    - send the initial file to the ch_ToScale channel
             }
 
         input:
-        tuple file(R_function), BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
+        tuple path(R_function), BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_rfunc_bed_lib
         
         output:
-        file("${LibName}.${BedName}.avgdensity.bed")
+        path("${LibName}.${BedName}.avgdensity.bed")
         tuple path(R_function), path("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
         
         script:
