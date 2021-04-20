@@ -416,8 +416,6 @@ OK    - Converting all density tables to R object with scaling
 
 
 
-Channel.fromPath(params.r_function_file).view()
-
 if(params.r_analyses){
     //process check_bed_format {
         /* The bed file for the r_analyses should be a 6column format.
@@ -461,10 +459,10 @@ TODO    - remove the unnecessary fields from input.
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
         .set{ch_R_bed_n_lib}
         
-    Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
+    /*Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
         .combine(ch_R_bed_n_lib).view()
         .set{ch_R_rfunc_bed_lib}
-
+*/
 
     process tag_density {
     /* Get the read density (from bw file) on coordinates (bed file) using get_tag_density script.
@@ -482,12 +480,12 @@ TEST    - send the initial file to the ch_ToScale channel
             }
 
         input:
-        tuple path(r_function_file), BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
-                LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_rfunc_bed_lib
+        tuple BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
+                LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_bed_n_lib
         
         output:
         path("${LibName}.${BedName}.avgdensity.bed")
-        tuple path(r_function_file), path("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
+        tuple path("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
         
         script:
         """
@@ -496,6 +494,9 @@ TEST    - send the initial file to the ch_ToScale channel
         """
     }
     if(params.r_scaling){
+    Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
+        .combine(ch_ToScale).view()
+        .set{ch_R_rfunc_toScale}
         process density_R_scaling {
         /* From the result of get_tag_density script, use R to rescale regions to a fixed number of values.
     OK      - get only 3 columns from get_tag_density for each feature : ID, strand, density for each base pair (#4, #6, #7).
@@ -507,7 +508,7 @@ TEST    - send the initial file to the ch_ToScale channel
         */
             tag "$LibName - $BedName"
             input:
-            tuple file(R_function), file(TagDensity) ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight from ch_ToScale
+            tuple file(R_function), file(TagDensity) ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight from ch_R_rfunc_toScale
             
             output:
             file(temp_file)
