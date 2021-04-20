@@ -494,9 +494,11 @@ TEST    - send the initial file to the ch_ToScale channel
         """
     }
     if(params.r_scaling){
-    Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
-        .combine(ch_ToScale).view()
-        .set{ch_R_rfunc_toScale}
+
+        Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
+            .combine(ch_ToScale)
+            .set{ch_R_rfunc_toScale}
+        
         process density_R_scaling {
         /* From the result of get_tag_density script, use R to rescale regions to a fixed number of values.
     OK      - get only 3 columns from get_tag_density for each feature : ID, strand, density for each base pair (#4, #6, #7).
@@ -517,7 +519,7 @@ TEST    - send the initial file to the ch_ToScale channel
             
             script:
             """
-            grep -v "#" tagdensity.output | awk '{ print \$4"\\t"\$6"\\t"\$7 }' > temp_file
+            grep -v "#" ${TagDensity} | awk '{ print \$4"\\t"\$6"\\t"\$7 }' > temp_file
             
             echo "R --no-save --no-restore --slave <<RSCRIPT
             R.Version()
