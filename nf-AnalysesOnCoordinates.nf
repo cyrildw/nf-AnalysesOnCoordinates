@@ -517,7 +517,7 @@ TEST    - send the initial file to the ch_ToScale channel
             
             script:
             """
-            grep -v "#" tagdensity.output | awk '{ print \$4\\t"\$6"\\t"\$7 }' > temp_file
+            grep -v "#" tagdensity.output | awk '{ print \$4"\\t"\$6"\\t"\$7 }' > temp_file
             
             echo "R --no-save --no-restore --slave <<RSCRIPT
             R.Version()
