@@ -416,7 +416,7 @@ OK    - Converting all density tables to R object with scaling
 
 
 
-
+Channel.fromPath(params.r_function_file).view()
 
 if(params.r_analyses){
     //process check_bed_format {
