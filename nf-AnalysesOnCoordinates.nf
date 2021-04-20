@@ -462,7 +462,7 @@ TODO    - remove the unnecessary fields from input.
         .set{ch_R_bed_n_lib}
         
     Channel.fromPath(params.r_function_file) // Requires to combine the r_scaling file with the bed n lib channel
-        .combine(ch_R_bed_n_lib)
+        .combine(ch_R_bed_n_lib).view()
         .set{ch_R_rfunc_bed_lib}
 
 
