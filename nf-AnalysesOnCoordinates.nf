@@ -461,7 +461,7 @@ TODO    - remove the unnecessary fields from input.
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
         .set{ch_R_bed_n_lib}
         
-    Channel.fromPath(params.r_function_file) // Requires to combine the r_scaling file with the bed n lib channel
+    Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
         .combine(ch_R_bed_n_lib).view()
         .set{ch_R_rfunc_bed_lib}
 
@@ -487,7 +487,7 @@ TEST    - send the initial file to the ch_ToScale channel
         
         output:
         file("${LibName}.${BedName}.avgdensity.bed")
-        tuple file(R_function), file("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
+        tuple path(R_function), path("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
         
         script:
         """
