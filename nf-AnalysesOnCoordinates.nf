@@ -461,7 +461,7 @@ TODO    - remove the unnecessary fields from input.
     ch_for_R_ext_Bed.combine(ch_before_R_lib) // This combines the Bed channel with the lib channel.
         .set{ch_R_bed_n_lib}
         
-    Channel.fromPath(params.r_scaling) // Requires to combine the r_scaling file with the bed n lib channel
+    Channel.fromPath(params.r_function_file) // Requires to combine the r_scaling file with the bed n lib channel
         .combine(ch_R_bed_n_lib)
         .set{ch_R_rfunc_bed_lib}
 
