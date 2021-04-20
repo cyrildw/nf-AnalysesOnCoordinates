@@ -474,18 +474,18 @@ TEST    - send the initial file to the ch_ToScale channel
     */
         tag "$LibName - $BedName"
         publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
-            saveAs: { filename ->
-                if (filename.endsWith('.avgdensity.bed')) "./RData/$filename"
-                else null
-            }
+        saveAs: { filename ->
+            if (filename.endsWith('.avgdensity.bed')) "./RData/$filename"
+            else null
+        }
 
         input:
         tuple BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_bed_n_lib
         
         output:
-        path("${LibName}.${BedName}.avgdensity.bed")
-        tuple path("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
+        file("${LibName}.${BedName}.avgdensity.bed")
+        tuple file("${LibName}.${BedName}.tagdensity_output"), LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
         
         script:
         """
