@@ -419,13 +419,13 @@ OK    - Converting all density tables to R object with scaling
 
 
 if(params.r_analyses){
-    process check_bed_format {
+    //process check_bed_format {
         /* The bed file for the r_analyses should be a 6column format.
 TODO    - Count the number of columns "awk '{print NF}' file | sort -nu | tail -n 1"
 TODO    - If < 6 columns : add name (peak_$i); score (0); strand (.)
 */
 
-    }
+    //}
 
     process create_bed_with_ext {
     /*In case the bed conf requires extension on the flanking regions, this process modifies the bed file accordingly.
