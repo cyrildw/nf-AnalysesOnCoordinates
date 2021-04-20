@@ -1,3 +1,14 @@
+/* nf-AnalysesOnCoordinates.nf
+    Pipeline using, bam files, bigwig file and bedfiles to produce
+        - peak calling (macs2)
+        - heatmaps and correlations (deeptools)
+            - options for groups of regions using their ID
+        - average density per regions (get_tag_density, R)
+        - scaled tag density for each region (get_tag_density, R)
+
+
+*/
+
 // nextflow run -c nf-AnalysesOnCoordinates.config  --name "Testing" nf-AnalysesOnCoordinates.nf 
 Channel
    .fromPath(params.input_design)
@@ -21,7 +32,6 @@ Channel
                     }
    .into { design_bigwig_csv; ch_before_dt_lib; ch_before_R_lib}
 
-//BedChannel : add an RFinalLength(100) and DTFinalLength (variable)
 Channel
     .fromPath(params.bed_design)
     .splitCsv(header:true, sep:";")
@@ -118,6 +128,12 @@ if(params.deeptools_analyses){
     -labels & BedName for plotting
 */
     process bedGroups {
+        /* Creates sub bed file from the bedgroupe file
+        input   :   ch_before_dt_bed
+        output  :   ch_dt_bedGroup_computeMatrix
+                    ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix
+                    bedfiles, saved in /BedFiles/
+        */
         tag "$BedName"
         container=''
         publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
@@ -178,8 +194,14 @@ if(params.deeptools_analyses){
 
 
     process dt_MultiBWsummary {
-        // Computes the npz Matrix file required for the dt_PlotCorrelation process.
-        // The npz file is saved in the DeeptoolsData directory
+        /* Computes the npz Matrix file required for the dt_PlotCorrelation process.
+            The npz file is saved in the DeeptoolsData directory
+        input   :   ch_dt_bed_multiBWsummary
+                    ch_dt_files_multiBWsummary
+        ouput   :   ch_multibw_matrix
+                    ch_multibw_bedname
+                    npz file saved in /DeeptoolsData/
+        */
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -397,10 +419,17 @@ OK    - Converting all density tables to R object with scaling
 
 
 if(params.r_analyses){
+    process check_bed_format {
+        /* The bed file for the r_analyses should be a 6column format.
+TODO    - Count the number of columns "awk '{print NF}' file | sort -nu | tail -n 1"
+TODO    - If < 6 columns : add name (peak_$i); score (0); strand (.)
+*/
+
+    }
 
     process create_bed_with_ext {
     /*In case the bed conf requires extension on the flanking regions, this process modifies the bed file accordingly.
-TODO    - save the bedfile
+ok    - save the bedfile
 TODO    - remove the unnecessary fields from input.
 */
         tag "$BedName:$BedExtension-$BedExtLengthLeft:$BedExtLengthRight"
@@ -439,82 +468,112 @@ TODO    - remove the unnecessary fields from input.
 
     process tag_density {
     /* Get the read density (from bw file) on coordinates (bed file) using get_tag_density script.
-OK      - get_tag_density outputs only 3 columns of interest : for each feature : ID, strand, density for each base pair.
-OK      - create a R-script allowing to scale each feature to a fixed length set by BedFinalLength
-OK      - execute the R-script to only save the final table of dimension nb_of_bed_coordinates x BedFinalLength
-OK      - save the R_table
-OK      - output a channel with the BedName, LibName, r_table
+OK      - get_tag_density only getting the first 8 columns
+TEST    - use 1, 2, 3, 4, 8, 6 columns to produce bed file with average tag density per coordinates
+TEST    - send the initial file to the ch_ToScale channel
+
 
     */
         tag "$LibName - $BedName"
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+            saveAs: { filename ->
+                if (filename.endsWith('.avgdensity.bed')) "./RData/$filename"
+                else null
+            }
+
         input:
         tuple file(R_function), BedName, file(BedFile),file(BedGrpFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight, 
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_rfunc_bed_lib
         
         output:
-        file(temp_file)
-        file("r_file_2_run.R")
-        file("${LibName}.${BedName}.R")
-        tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
-         
+        file("${LibName}.${BedName}.avgdensity.bed")
+        tuple file(R_function), file("${LibName}.${BedName}.tagdensity_output") ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight ch_ToScale
+        
         script:
         """
-        get_tag_density -f ${LibBW} ${BedFile} | awk '{print \$4"\\t"\$6"\\t"\$7}' - > temp_file
-        echo "R --no-save --no-restore --slave <<RSCRIPT
-        R.Version()
-        source('${R_function}')
-        finalL=${BedRFinalLength}
-        ext='${BedExtension}'
-        if(ext=='false'){ext=FALSE}
-        if(ext=='true'){ext=TRUE}
-        extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
-        extVL=${BedExtValLeft};extVR=${BedExtValRight};
-        t=as.list(read.table('temp_file', stringsAsFactor=FALSE, header=TRUE))
-        names(t)=c('Q_id', 'Strand', 'PerBP')
-        t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
-        for(k in 1:length(t[['Strand']])){ 
-            if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[['Splt_PerBP']][[k]])}
-        } # Reversing order for minus strand
-        t_scaled=c()
-        t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
-        colnames(t_scaled)=t[['Q_id']]
-        save(x=t_scaled, file='${LibName}.${BedName}.R')
-        #write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
-        RSCRIPT
-        " > r_file_2_run.R
-        bash r_file_2_run.R
+        get_tag_density -f ${LibBW} ${BedFile} | awk '{for(i=1;i<=8;i++) printf \$i"\\t"; print ""}' - > ${LibName}.${BedName}.tagdensity_output
+        grep -v "#" ${LibName}.${BedName}.tagdensity_output | awk '{ print \$1"\\t"\$2"\\t"\$3"\\t"\$4"\\t"\$8"\\t"\$6 }' > ${LibName}.${BedName}.avgdensity.bed
         """
     }
-    ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
-    /* For each bed, get the R_table files and LibName*/
-    process combine_R_per_bed {
-        tag "$BedName"
-        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
-        saveAs: { filename ->
-            if (filename.endsWith('.scaledData.R')) "./RData/$filename"
-            else null
+    if(params.r_scaling){
+        process density_R_scaling {
+        /* From the result of get_tag_density script, use R to rescale regions to a fixed number of values.
+    OK      - get only 3 columns from get_tag_density for each feature : ID, strand, density for each base pair (#4, #6, #7).
+    OK      - create a R-script allowing to scale each feature to a fixed length set by BedFinalLength
+    OK      - execute the R-script to only save the final table of dimension nb_of_bed_coordinates x BedFinalLength
+    OK      - save the R_table
+    OK      - output a channel with the BedName, LibName, r_table
+
+        */
+            tag "$LibName - $BedName"
+            input:
+            tuple file(R_function), file(TagDensity) ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight from ch_ToScale
+            
+            output:
+            file(temp_file)
+            file("r_file_2_run.R")
+            tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
+            
+            script:
+            """
+            grep -v "#" tagdensity.output | awk '{ print \$4\\t"\$6"\\t"\$7 }' > temp_file
+            
+            echo "R --no-save --no-restore --slave <<RSCRIPT
+            R.Version()
+            source('${R_function}')
+            finalL=${BedRFinalLength}
+            ext='${BedExtension}'
+            if(ext=='false'){ext=FALSE}
+            if(ext=='true'){ext=TRUE}
+            extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
+            extVL=${BedExtValLeft};extVR=${BedExtValRight}; 
+            t=as.list(read.table('temp_file', stringsAsFactor=FALSE, header=TRUE))
+            names(t)=c('Q_id', 'Strand', 'PerBP')
+            t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
+            for(k in 1:length(t[['Strand']])){ 
+                if(as.character(t[['Strand']][k])=='-'){t[['Splt_PerBP']][[k]]=rev(t[['Splt_PerBP']][[k]])}
+            } # Reversing order for minus strand
+            t_scaled=c()
+            t_scaled=rbind(t_scaled, sapply(t[['Splt_PerBP']], function(y) Scale_Vector(Data=y,FinalLength=finalL, Extention=ext, Ext_length=c(extLL, extLR), Ext_value=c(extVL, extVR))))
+            colnames(t_scaled)=t[['Q_id']]
+            save(x=t_scaled, file='${LibName}.${BedName}.R')
+            #write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
+            RSCRIPT
+            " > r_file_2_run.R
+            bash r_file_2_run.R
+            """
         }
+        ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
+        /* For each bed, get the R_table files and LibName*/
+        process combine_R_per_bed {
+            tag "$BedName"
+            publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+            saveAs: { filename ->
+                if (filename.endsWith('.scaledData.R')) "./RData/$filename"
+                else null
+            }
 
-        input: 
-        tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
-        output:
-        file("r_file_2_run.R")
-        file("${BedName}.scaledData.R")
-        script:
-        """
-        echo "R --no-save --no-restore --slave <<RSCRIPT
-        R.Version()
-        bedName='${BedName}'
-        libNames=c('${LibNames.join('\',\'')}')
-        libFiles=c('${R_files.join('\',\'')}')
-        sortby=order(libNames);
-        libNames=libNames[sortby]; libFiles=libFiles[sortby]
-        bedData=list();for( i in 1:length(libNames)){load(libFiles[i]); bedData[[libNames[i]]]=t_scaled}
-        save(x=bedData, file='${BedName}.scaledData.R')
-        " > r_file_2_run.R
-        bash r_file_2_run.R
-        """
+            input: 
+            tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
+            output:
+            file("r_file_2_run.R")
+            file("${BedName}.scaledData.R")
+            script:
+            """
+            echo "R --no-save --no-restore --slave <<RSCRIPT
+            R.Version()
+            bedName='${BedName}'
+            libNames=c('${LibNames.join('\',\'')}')
+            libFiles=c('${R_files.join('\',\'')}')
+            sortby=order(libNames);
+            libNames=libNames[sortby]; libFiles=libFiles[sortby]
+            bedData=list();for( i in 1:length(libNames)){load(libFiles[i]); bedData[[libNames[i]]]=t_scaled}
+            save(x=bedData, file='${BedName}.scaledData.R')
+            " > r_file_2_run.R
+            bash r_file_2_run.R
+            """
 
+        }
     }
 
 }
