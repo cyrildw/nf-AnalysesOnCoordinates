@@ -471,7 +471,8 @@ TODO    - remove the unnecessary fields from input.
 OK      - get_tag_density only getting the first 8 columns
 OK    - use 1, 2, 3, 4, 8, 6 columns to produce bed file with average tag density per coordinates
 OK    - send the initial file to the ch_ToScale channel
-TODO  - Gather all avg density in one file per bed
+OK    - Gather all avg density in one file per bed
+?TODO?  - Output everything according to initial order.
 
 
     */
