@@ -521,7 +521,7 @@ TODO  - Gather all avg density in one file per bed
         sortby=order(libNames);
         libNames=libNames[sortby]; libFiles=libFiles[sortby]
         resTable=read.table(libFiles[1], head=FALSE, stringsAsFactor=FALSE)[,c(1, 2, 3, 6)]
-        colnames(resTable)=c(\'chr\', \'start\', \'end\', \'strand\')
+        colnames(resTable)=c(\\'chr\\', \\'start\\', \\'end\\', \\'strand\\')
         for( i in 1:length(libNames)){
             resTable=cbind(resTable, read.table(libFiles[i], head=FALSE, stringsAsFactor=FALSE)[,c(5)]
             colnames(resTable)[dim(resTable)[2]]=libNames[i]}
