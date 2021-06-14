@@ -487,7 +487,7 @@ TODO  - Gather all avg density in one file per bed
                 LibName, file(LibBam), file(LibBai), file(LibBW), LibSequenced, LibMapped, LibUnique, LibInsertSize, LibQpcrNorm, LibType, LibProj, LibExp, LibCondition, LibOrder, LibIsControl, LibControl   from ch_R_bed_n_lib
         
         output:
-        file("${LibName}.${BedName}.avgdensity.bed")
+        tuple BedName, LibName, file("${LibName}.${BedName}.avgdensity.bed") into ch_avgTD
         tuple file("${LibName}.${BedName}.tagdensity_output"), LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight into ch_ToScale
         
         script:
@@ -496,7 +496,44 @@ TODO  - Gather all avg density in one file per bed
         grep -v "#" ${LibName}.${BedName}.tagdensity_output | awk '{ print \$1"\\t"\$2"\\t"\$3"\\t"\$4"\\t"\$8"\\t"\$6 }' > ${LibName}.${BedName}.avgdensity.bed
         """
     }
-    
+    ch_avgTD.groupTuple(by: 0).set{ch_grouped_avgTD}
+
+    process combine_avgTD_per_bed {
+        tag "$BedName"
+        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+        saveAs: { filename ->
+            if (filename.endsWith('.tsv')) "./RData/$filename"
+            else null
+        }
+
+        input: 
+        tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
+        output:
+        file("r_file_2_run.R")
+        file("${BedName}.avg_TagDensity.tsv")
+        script:
+        """
+        echo "R --no-save --no-restore --slave <<RSCRIPT
+        R.Version()
+        bedName='${BedName}'
+        libNames=c('${LibNames.join('\',\'')}')
+        libFiles=c('${R_files.join('\',\'')}')
+        sortby=order(libNames);
+        libNames=libNames[sortby]; libFiles=libFiles[sortby]
+        resTable=read.table(libFiles[1], head=FALSE, stringAsFactor=FALSE)[,c(1, 2, 3, 6)]
+        colnames(resTable)=c("chr", "start", "end", "strand")
+        for( i in 1:length(libNames)){
+            resTable=cbind(resTable, read.table(libFiles[i], head=FALSE, stringAsFactor=FALSE)[,c(5)]
+            colnames(resTable)[dim(resTable)[2]]=libNames[i]}
+        write.table(resTable, file='${BedName}.avg_TagDensity.tsv', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\\t")
+        " > r_file_2_run.R
+        bash r_file_2_run.R
+        """
+
+    }
+
+
+
     if(params.r_scaling){
 
         Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
@@ -551,6 +588,7 @@ TODO  - Gather all avg density in one file per bed
             """
         }
         ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
+
         /* For each bed, get the R_table files and LibName*/
         process combine_R_per_bed {
             tag "$BedName"
