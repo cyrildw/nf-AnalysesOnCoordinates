@@ -507,7 +507,7 @@ TODO  - Gather all avg density in one file per bed
         }
 
         input: 
-        tuple BedName, LibNames, path(R_files) from ch_grouped_scaled_R
+        tuple BedName, LibNames, path(R_files) from ch_grouped_avgTD
         output:
         file("r_file_2_run.R")
         file("${BedName}.avg_TagDensity.tsv")
