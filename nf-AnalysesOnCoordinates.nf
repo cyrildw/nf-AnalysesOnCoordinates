@@ -421,6 +421,8 @@ if(params.r_analyses){
         /* The bed file for the r_analyses should be a 6column format.
 TODO    - Count the number of columns "awk '{print NF}' file | sort -nu | tail -n 1"
 TODO    - If < 6 columns : add name (peak_$i); score (0); strand (.)
+TODO    - Gather all avg density in one file per bed
+TODO    - report file with file location per bigwig file
 */
 
     //}
@@ -467,8 +469,9 @@ TODO    - remove the unnecessary fields from input.
     process tag_density {
     /* Get the read density (from bw file) on coordinates (bed file) using get_tag_density script.
 OK      - get_tag_density only getting the first 8 columns
-TEST    - use 1, 2, 3, 4, 8, 6 columns to produce bed file with average tag density per coordinates
-TEST    - send the initial file to the ch_ToScale channel
+OK    - use 1, 2, 3, 4, 8, 6 columns to produce bed file with average tag density per coordinates
+OK    - send the initial file to the ch_ToScale channel
+TODO  - Gather all avg density in one file per bed
 
 
     */
@@ -493,6 +496,7 @@ TEST    - send the initial file to the ch_ToScale channel
         grep -v "#" ${LibName}.${BedName}.tagdensity_output | awk '{ print \$1"\\t"\$2"\\t"\$3"\\t"\$4"\\t"\$8"\\t"\$6 }' > ${LibName}.${BedName}.avgdensity.bed
         """
     }
+    
     if(params.r_scaling){
 
         Channel.fromPath(params.r_function_file) // Requires to combine the r_function file with the bed n lib channel
