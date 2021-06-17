@@ -355,7 +355,7 @@ if(params.deeptools_analyses){
         
         
         script:
-        if(BedGroupFile.size()!=0 ){
+        if(BedGrpFile.size()!=0 ){
             if(BedReferencePoint=='false')
                 """
                 computeMatrix scale-regions \
