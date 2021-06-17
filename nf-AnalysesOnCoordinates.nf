@@ -154,7 +154,8 @@ if(params.deeptools_analyses){
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
             //Creating 1 file per group + 1 file with goupefile-names.
             //Then greping ids from each group file into the BED file to produce 1 GroupBedFile/group.
-            """
+            // In bash it takes too much time to iterate over all IDs, I'll try in R
+ /*           """
             cat ${BedGroupFile} | while read line; do 
                 echo -e \${line//;/"\\t"} | \
                 awk '{ print "#"\$0 > \$1".txt"; print \$1".txt" >> "${BedName}.GrpFiles.txt" } ';
@@ -167,6 +168,24 @@ if(params.deeptools_analyses){
                 done;
             done
             """
+*/
+                   """
+        echo "R --no-save --no-restore --slave <<RSCRIPT
+        R.Version()
+        grp=readLines('${BedGroupFile}')
+        bed=read.table('${BedFile}', stringsAsFactor=FALSE, head=FALSE)
+        a=unname(sapply(grp, function(x) strsplit(x, split=";")[[1]])) #spliting the line
+        names(a)=sapply(a, function(x) x[1]) #using first element as name for the group
+        a=sapply(a, function(x) x[-1]) #removing the first element
+
+        for(i in 1:length(a)){
+            filename=paste0('${BedName}'', '.', names(a)[i], '.bed')
+            write.table(x=bed[bed[[4]] %in% a[[i]],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep=\'\t\')
+            cat(x=paste(names(a)[i], \'\t\', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
+        }
+        " > r_file_2_run.R
+        bash r_file_2_run.R
+        """
         }
         else{
             """
@@ -174,6 +193,7 @@ if(params.deeptools_analyses){
             """
             
         }
+       
     }
     ch_test.view()
 
@@ -355,8 +375,7 @@ if(params.deeptools_analyses){
         
         when:
         BedGrpFile.size()!=0
-        script:
-        
+        script:        
             if(BedReferencePoint=='false')
                 """
                 computeMatrix scale-regions \
