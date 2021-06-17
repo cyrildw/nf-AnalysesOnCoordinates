@@ -353,9 +353,10 @@ if(params.deeptools_analyses){
         file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")//the heatmap
         //val(BedName) into ch_computeMatrix_bedname
         
-        
+        when:
+        BedGrpFile.size()!=0
         script:
-        if(BedGrpFile.size()!=0 ){
+        
             if(BedReferencePoint=='false')
                 """
                 computeMatrix scale-regions \
@@ -394,7 +395,7 @@ if(params.deeptools_analyses){
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-        }
+    
     }
 }
 
