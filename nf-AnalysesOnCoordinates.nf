@@ -175,7 +175,7 @@ if(params.deeptools_analyses){
             
         }
     }
-    //ch_test.view()
+    ch_test.view()
 
     //ch_before_dt_bed
     //    .into{ ch_dt_bed_multiBWsummary; ch_dt_bed_computeMatrix}
@@ -477,11 +477,11 @@ OK    - Gather all avg density in one file per bed
 
     */
         tag "$LibName - $BedName"
-        publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
+        /*publishDir "${params.outdir}/${params.name}/", mode: 'copy', //params.publish_dir_mode,
         saveAs: { filename ->
             if (filename.endsWith('.avgdensity.bed')) "./RData/$filename"
             else null
-        }
+        }*/
 
         input:
         tuple BedName, file(BedFile), file(BedGrpFile), BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight,
