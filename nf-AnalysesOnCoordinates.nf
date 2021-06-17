@@ -353,36 +353,34 @@ if(params.deeptools_analyses){
         file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")//the heatmap
         //val(BedName) into ch_computeMatrix_bedname
         
-        when:
-        BedGrpFile.size() != 0
+        
         script:
-        
-        if(BedReferencePoint=='false')
-            """
-            computeMatrix scale-regions \
-            -S ${Files.join(' ')} \
-            -R ${BedGrpBedFiles.join(' ')} \
-            -b ${BedExtLengthLeft} \
-            -a ${BedExtLengthRight} \
-            -m ${BedDTlength} \
-            --skipZeros \
-            -p ${task.cpus} \
-            -o dt_ComputeMatrix.Group.${BedName}.gz
-            """
-        
-        
-        else
-            """
-            computeMatrix reference-point \
-            -S ${Files.join(' ')} \
-            -R ${BedGrpBedFiles.join(' ')} \
-            -b ${BedExtLengthLeft} \
-            -a ${BedExtLengthRight} \
-            --skipZeros \
-            -p ${task.cpus} \
-            -o dt_ComputeMatrix.Group.${BedName}.gz
-            """
-        
+        if(BedGroupFile.size()!=0 ){
+            if(BedReferencePoint=='false')
+                """
+                computeMatrix scale-regions \
+                -S ${Files.join(' ')} \
+                -R ${BedGrpBedFiles.join(' ')} \
+                -b ${BedExtLengthLeft} \
+                -a ${BedExtLengthRight} \
+                -m ${BedDTlength} \
+                --skipZeros \
+                -p ${task.cpus} \
+                -o dt_ComputeMatrix.Group.${BedName}.gz
+                """
+
+            else
+                """
+                computeMatrix reference-point \
+                -S ${Files.join(' ')} \
+                -R ${BedGrpBedFiles.join(' ')} \
+                -b ${BedExtLengthLeft} \
+                -a ${BedExtLengthRight} \
+                --skipZeros \
+                -p ${task.cpus} \
+                -o dt_ComputeMatrix.Group.${BedName}.gz
+                """
+        }
 
         """
         plotHeatmap \
