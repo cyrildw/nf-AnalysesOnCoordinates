@@ -147,11 +147,12 @@ if(params.deeptools_analyses){
         output:
         files "*.txt"
         files "*.bed"
-        tuple BedName, file(BedFile), file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed"),BedDTlength,BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength into (ch_test,ch_dt_bedGroup_computeMatrix)
+        tuple BedName, file(BedFile), NbGroup, file("${BedName}.GrpFiles.txt"), file("${BedName}.*.bed"),BedDTlength,BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength into (ch_test,ch_dt_bedGroup_computeMatrix)
         tuple BedName, file(BedFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength into (ch_dt_bed_multiBWsummary, ch_dt_bed_computeMatrix)
 
         script:
         if(BedGroupFile.isFile() && BedGroupFile.size()!=0 ){
+            NbGroup=1
             //Creating 1 file per group + 1 file with goupefile-names.
             //Then greping ids from each group file into the BED file to produce 1 GroupBedFile/group.
             // In bash it takes too much time to iterate over all IDs, I'll try in R
@@ -188,6 +189,7 @@ if(params.deeptools_analyses){
         """
         }
         else{
+            NbGroup=0
             """
             touch ${BedName}.GrpFiles.txt ${BedName}.nogroup.bed 
             """
@@ -365,7 +367,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile),file(BedGrpFile), file(BedGrpBedFiles),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile),NbGroup, file(BedGrpFile), file(BedGrpBedFiles),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_groupcomputeMatrix
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
@@ -374,7 +376,7 @@ if(params.deeptools_analyses){
         //val(BedName) into ch_computeMatrix_bedname
         
         when:
-        BedGrpFile.size()!=0
+        NbGroup==1
         script:        
             if(BedReferencePoint=='false')
                 """
