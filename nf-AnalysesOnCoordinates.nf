@@ -378,31 +378,31 @@ if(params.deeptools_analyses){
         when:
         NbGroup == 1
         script:        
-            if(BedReferencePoint=='false')
-                """
-                computeMatrix scale-regions \
-                -S ${Files.join(' ')} \
-                -R ${BedGrpBedFiles.join(' ')} \
-                -b ${BedExtLengthLeft} \
-                -a ${BedExtLengthRight} \
-                -m ${BedDTlength} \
-                --skipZeros \
-                -p ${task.cpus} \
-                -o dt_ComputeMatrix.Group.${BedName}.gz
-                """
+        if(BedReferencePoint=='false')
+            """
+            computeMatrix scale-regions \
+            -S ${Files.join(' ')} \
+            -R ${BedGrpBedFiles.join(' ')} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            -m ${BedDTlength} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.Group.${BedName}.gz
+            """
 
-            else
-                """
-                computeMatrix reference-point \
-                -S ${Files.join(' ')} \
-                -R ${BedGrpBedFiles.join(' ')} \
-                -b ${BedExtLengthLeft} \
-                -a ${BedExtLengthRight} \
-                --skipZeros \
-                -p ${task.cpus} \
-                -o dt_ComputeMatrix.Group.${BedName}.gz
-                """
-        
+        else
+            """
+            computeMatrix reference-point \
+            -S ${Files.join(' ')} \
+            -R ${BedGrpBedFiles.join(' ')} \
+            -b ${BedExtLengthLeft} \
+            -a ${BedExtLengthRight} \
+            --skipZeros \
+            -p ${task.cpus} \
+            -o dt_ComputeMatrix.Group.${BedName}.gz
+            """
+    
 
         """
         plotHeatmap \
