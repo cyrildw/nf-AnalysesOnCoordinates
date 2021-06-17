@@ -380,7 +380,7 @@ if(params.deeptools_analyses){
                 -p ${task.cpus} \
                 -o dt_ComputeMatrix.Group.${BedName}.gz
                 """
-        }
+        
 
         """
         plotHeatmap \
@@ -394,7 +394,7 @@ if(params.deeptools_analyses){
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
-       
+        }
     }
 }
 
