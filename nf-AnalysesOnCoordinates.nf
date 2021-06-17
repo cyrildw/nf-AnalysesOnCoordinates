@@ -367,7 +367,7 @@ if(params.deeptools_analyses){
             else null
         }
         input:
-        tuple BedName, file(BedFile),NbGroup, file(BedGrpFile), file(BedGrpBedFiles),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bedGroup_computeMatrix
+        tuple BedName, file(BedFile), NbGroup, file(BedGrpFile), file(BedGrpBedFiles),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bedGroup_computeMatrix
         file(Files) from ch_dt_files_groupcomputeMatrix
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
@@ -376,7 +376,7 @@ if(params.deeptools_analyses){
         //val(BedName) into ch_computeMatrix_bedname
         
         when:
-        NbGroup==1
+        NbGroup == 1
         script:        
             if(BedReferencePoint=='false')
                 """
