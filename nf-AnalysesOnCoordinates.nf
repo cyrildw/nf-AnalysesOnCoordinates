@@ -378,7 +378,7 @@ if(params.deeptools_analyses){
         when:
         NbGroup == 1
         script:        
-        if(BedReferencePoint=='false')
+        if(BedReferencePoint=='false'){
             """
             computeMatrix scale-regions \
             -S ${Files.join(' ')} \
@@ -389,9 +389,20 @@ if(params.deeptools_analyses){
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.Group.${BedName}.gz
-            """
 
-        else
+            plotHeatmap \
+            --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
+            -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+            --startLabel '-${BedExtLengthLeft}' \
+            --endLabel '${BedExtLengthRight}' \
+            --refPointLabel 0 \
+            --labelRotation ${params.deeptools_labelRotation} \
+            --yMin 0 \
+            --xAxisLabel ${BedName} \
+            --samplesLabel ${Labels.join(' ')}
+            """
+        }
+        else{
             """
             computeMatrix reference-point \
             -S ${Files.join(' ')} \
@@ -401,10 +412,20 @@ if(params.deeptools_analyses){
             --skipZeros \
             -p ${task.cpus} \
             -o dt_ComputeMatrix.Group.${BedName}.gz
-            """
-    
-
-        """
+            
+            plotHeatmap \
+            --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
+            -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+            --startLabel '-${BedExtLengthLeft}' \
+            --endLabel '${BedExtLengthRight}' \
+            --refPointLabel 0 \
+            --labelRotation ${params.deeptools_labelRotation} \
+            --yMin 0 \
+            --xAxisLabel ${BedName} \
+            --samplesLabel ${Labels.join(' ')}
+                """
+        }
+        /*"""
         plotHeatmap \
         --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
         -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
@@ -415,7 +436,7 @@ if(params.deeptools_analyses){
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
-        """
+        """*/
     
     }
 }
