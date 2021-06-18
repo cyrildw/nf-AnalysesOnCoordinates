@@ -175,8 +175,8 @@ if(params.deeptools_analyses){
         R.Version()
         grp=readLines('${BedGroupFile}')
         bed=read.table('${BedFile}', stringsAsFactor=FALSE, head=FALSE)
+        a=unname(sapply(grp, function(x) strsplit(x, split=';')[[1]])) #spliting the line
         if(is.list(a) && length(a) != 1){ #In case their is more than 1 group
-            a=unname(sapply(grp, function(x) strsplit(x, split=';')[[1]])) #spliting the line
             names(a)=sapply(a, function(x) x[1]) #using first element as name for the group
             a=sapply(a, function(x) x[-1]) #removing the first element
 
