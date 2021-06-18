@@ -185,8 +185,7 @@ if(params.deeptools_analyses){
                 write.table(x=bed[bed[[4]] %in% a[[i]],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\\t')
                 cat(x=paste(names(a)[i], '\\t', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
             }
-        }
-        else{
+        } else{
             filename=paste0('${BedName}', '.', a[1], '.bed')
             write.table(x=bed[bed[[4]] %in% a[-1],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\\t')
             cat(x=paste(a[1], '\\t', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
