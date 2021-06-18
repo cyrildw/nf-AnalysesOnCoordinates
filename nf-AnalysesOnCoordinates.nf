@@ -353,6 +353,7 @@ if(params.deeptools_analyses){
         --startLabel 'st' \
         --endLabel 'end' \
         --refPointLabel 0 \
+        --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
         --labelRotation ${params.deeptools_labelRotation} \
         --yMin 0 \
         --xAxisLabel ${BedName} \
@@ -402,6 +403,7 @@ if(params.deeptools_analyses){
             --startLabel 'start' \
             --endLabel 'end' \
             --refPointLabel 0 \
+            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
             --yMin 0 \
             --xAxisLabel ${BedName} \
@@ -425,6 +427,7 @@ if(params.deeptools_analyses){
             --startLabel '-${BedExtLengthLeft}' \
             --endLabel '${BedExtLengthRight}' \
             --refPointLabel 0 \
+            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
             --yMin 0 \
             --xAxisLabel ${BedName} \
