@@ -175,14 +175,21 @@ if(params.deeptools_analyses){
         R.Version()
         grp=readLines('${BedGroupFile}')
         bed=read.table('${BedFile}', stringsAsFactor=FALSE, head=FALSE)
-        a=unname(sapply(grp, function(x) strsplit(x, split=';')[[1]])) #spliting the line
-        names(a)=sapply(a, function(x) x[1]) #using first element as name for the group
-        a=sapply(a, function(x) x[-1]) #removing the first element
+        if(is.list(a) && length(a) != 1){ #In case their is more than 1 group
+            a=unname(sapply(grp, function(x) strsplit(x, split=';')[[1]])) #spliting the line
+            names(a)=sapply(a, function(x) x[1]) #using first element as name for the group
+            a=sapply(a, function(x) x[-1]) #removing the first element
 
-        for(i in 1:length(a)){
-            filename=paste0('${BedName}', '.', names(a)[i], '.bed')
-            write.table(x=bed[bed[[4]] %in% a[[i]],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\\t')
-            cat(x=paste(names(a)[i], '\\t', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
+            for(i in 1:length(a)){
+                filename=paste0('${BedName}', '.', names(a)[i], '.bed')
+                write.table(x=bed[bed[[4]] %in% a[[i]],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\\t')
+                cat(x=paste(names(a)[i], '\\t', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
+            }
+        }
+        else{
+            filename=paste0('${BedName}', '.', a[1], '.bed')
+            write.table(x=bed[bed[[4]] %in% a[-1],], file=filename,quote=FALSE, row.names=FALSE, col.names=FALSE, sep='\\t')
+            cat(x=paste(a[1], '\\t', filename), append=TRUE, file='${BedName}.GrpFiles.txt', fill=TRUE)
         }
         " > r_file_2_run.R
         bash r_file_2_run.R
@@ -393,8 +400,8 @@ if(params.deeptools_analyses){
             plotHeatmap \
             --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
             -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
-            --startLabel '-${BedExtLengthLeft}' \
-            --endLabel '${BedExtLengthRight}' \
+            --startLabel 'start' \
+            --endLabel 'end' \
             --refPointLabel 0 \
             --labelRotation ${params.deeptools_labelRotation} \
             --yMin 0 \
@@ -423,7 +430,7 @@ if(params.deeptools_analyses){
             --yMin 0 \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
-                """
+            """
         }
         /*"""
         plotHeatmap \
