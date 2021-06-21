@@ -353,6 +353,8 @@ if(params.deeptools_analyses){
         --startLabel 'st' \
         --endLabel 'end' \
         --refPointLabel 0 \
+        --regionsLabel '' \
+        --heatmapHeight ${params.deeptools_heatmapHeight} \
         --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
         --labelRotation ${params.deeptools_labelRotation} \
         --yMin 0 \
@@ -403,6 +405,7 @@ if(params.deeptools_analyses){
             --startLabel 'start' \
             --endLabel 'end' \
             --refPointLabel 0 \
+            --heatmapHeight ${params.deeptools_heatmapHeight} \
             --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
             --yMin 0 \
@@ -427,6 +430,7 @@ if(params.deeptools_analyses){
             --startLabel '-${BedExtLengthLeft}' \
             --endLabel '${BedExtLengthRight}' \
             --refPointLabel 0 \
+            --heatmapHeight ${params.deeptools_heatmapHeight} \
             --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
             --yMin 0 \
