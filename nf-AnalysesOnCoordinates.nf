@@ -122,7 +122,7 @@ cat groupenames.txt | while read line;do
 done
 */
 
-if(params.deeptools_analyses){
+if(params.deeptools.analyses){
 /* Deeptools process requires :
     -bw & Bed files for computation
     -labels & BedName for plotting
@@ -271,10 +271,7 @@ if(params.deeptools_analyses){
         script:
         """
         plotCorrelation \
-        --corData ${Matrix} \
-        --corMethod spearman \
-        --whatToPlot heatmap \
-        --plotNumbers \
+        --corData ${Matrix} ${params.deeptools.plotCorrelation_options} \
         --outFileCorMatrix dt_MultiBWsummary.CorTable.${BedName}.tab \
         -o Heatmap.dt_MultiBWsummary.${BedName}.pdf \
         --plotTitle ${BedName} \
@@ -354,9 +351,9 @@ if(params.deeptools_analyses){
         --endLabel 'end' \
         --refPointLabel 0 \
         --regionsLabel '' \
-        --heatmapHeight ${params.deeptools_heatmapHeight} \
-        --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-        --labelRotation ${params.deeptools_labelRotation} \
+        --heatmapHeight ${params.deeptools.heatmapHeight} \
+        --averageTypeSummaryPlot ${params.deeptools.TypeSummaryPlot} \
+        --labelRotation ${params.deeptools.labelRotation} \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
@@ -405,9 +402,9 @@ if(params.deeptools_analyses){
             --startLabel 'start' \
             --endLabel 'end' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} \
-            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-            --labelRotation ${params.deeptools_labelRotation} \
+            --heatmapHeight ${params.deeptools.heatmapHeight} \
+            --averageTypeSummaryPlot ${params.deeptools.TypeSummaryPlot} \
+            --labelRotation ${params.deeptools.labelRotation} \
             --yMin 0 \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
@@ -430,9 +427,9 @@ if(params.deeptools_analyses){
             --startLabel '-${BedExtLengthLeft}' \
             --endLabel '${BedExtLengthRight}' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} \
-            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-            --labelRotation ${params.deeptools_labelRotation} \
+            --heatmapHeight ${params.deeptools.heatmapHeight} \
+            --averageTypeSummaryPlot ${params.deeptools.TypeSummaryPlot} \
+            --labelRotation ${params.deeptools.labelRotation} \
             --yMin 0 \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
@@ -445,7 +442,7 @@ if(params.deeptools_analyses){
         --startLabel '-${BedExtLengthLeft}' \
         --endLabel '${BedExtLengthRight}' \
         --refPointLabel 0 \
-        --labelRotation ${params.deeptools_labelRotation} \
+        --labelRotation ${params.deeptools.labelRotation} \
         --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
