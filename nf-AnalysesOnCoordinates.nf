@@ -342,6 +342,7 @@ if(params.deeptools_analyses){
         val(BedName) from ch_computeMatrix_bedname
         output:
         file("Heatmap.dt_PlotHeatmap.${BedName}.pdf")
+        
         script:
         """
         plotHeatmap \
@@ -351,10 +352,9 @@ if(params.deeptools_analyses){
         --endLabel 'end' \
         --refPointLabel 0 \
         --regionsLabel '' \
-        --heatmapHeight ${params.deeptools_heatmapHeight} \
+        --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
         --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
         --labelRotation ${params.deeptools_labelRotation} \
-        --yMin 0 \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
@@ -402,10 +402,9 @@ if(params.deeptools_analyses){
             --startLabel 'start' \
             --endLabel 'end' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} \
+            --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
             --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
-            --yMin 0 \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
             """
@@ -427,10 +426,9 @@ if(params.deeptools_analyses){
             --startLabel '-${BedExtLengthLeft}' \
             --endLabel '${BedExtLengthRight}' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} \
+            --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
             --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
             --labelRotation ${params.deeptools_labelRotation} \
-            --yMin 0 \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
             """
@@ -442,8 +440,7 @@ if(params.deeptools_analyses){
         --startLabel '-${BedExtLengthLeft}' \
         --endLabel '${BedExtLengthRight}' \
         --refPointLabel 0 \
-        --labelRotation ${params.deeptools_labelRotation} \
-        --yMin 0 \
+        --labelRotation ${params.deeptools_labelRotation} ${params.deeptools_Heatmap_options} \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """*/
