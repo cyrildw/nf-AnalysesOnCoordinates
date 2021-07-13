@@ -241,13 +241,13 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile),BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength from ch_dt_bed_multiBWsummary
         file(Files) from ch_dt_files_multiBWsummary
         output:
-        file("dt_MultiBWsummary.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
+        file("${params.deeptools_PC_prefix}.Matrix.${BedName}.npz") into ch_multibw_matrix //the computed matrix
         val(BedName) into ch_multibw_bedname
         script:
         """
         multiBigwigSummary BED-file \
         -b ${Files.join(' ')} \
-        -o dt_MultiBWsummary.Matrix.${BedName}.npz \
+        -o ${params.deeptools_PC_prefix}.Matrix.${BedName}.npz \
         --BED ${BedFile} \
         --numberOfProcessors ${task.cpus}
         """
@@ -266,14 +266,14 @@ if(params.deeptools_analyses){
         val(Labels) from ch_dt_labels_plotCor
         val(BedName) from ch_multibw_bedname
         output:
-        file("dt_MultiBWsummary.CorTable.${BedName}.tab")
-        file("Heatmap.dt_MultiBWsummary.${BedName}.pdf")
+        file("${params.deeptools_PC_prefix}.CorTable.${BedName}.tab")
+        file("${params.deeptools_PC_prefix}.HeatMap.${BedName}.pdf")
         script:
         """
         plotCorrelation \
-        --corData ${Matrix} ${params.deeptools_plotCorrelation_options} \
-        --outFileCorMatrix dt_MultiBWsummary.CorTable.${BedName}.tab \
-        -o Heatmap.dt_MultiBWsummary.${BedName}.pdf \
+        --corData ${Matrix} ${params.deeptools_PC_options} \
+        --outFileCorMatrix ${params.deeptools_PC_prefix}.CorTable.${BedName}.tab \
+        -o ${params.deeptools_PC_prefix}.HeatMap.${BedName}.pdf \
         --plotTitle ${BedName} \
         --labels ${Labels.join(' ')}
         """
@@ -281,7 +281,7 @@ if(params.deeptools_analyses){
 
     
     process dt_ComputeMatrix {
-        // Compute the matrix file (.gz)
+        // Compute the matrix file (.gz) for the plotHeatmap
         tag "$BedName"
         label "multiCpu"
         publishDir "${params.outdir}/${params.name}/DeeptoolsData", mode: 'copy', //params.publish_dir_mode,
@@ -294,7 +294,7 @@ if(params.deeptools_analyses){
         tuple BedName, file(BedFile), BedDTlength, BedReferencePoint, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength  from ch_dt_bed_computeMatrix
         file(Files) from ch_dt_files_computeMatrix
         output:
-        file("dt_ComputeMatrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
+        file("${params.deeptools_HM_prefix}.Matrix.${BedName}.gz") into ch_computeMatrix_matrix //the computed matrix
         val(BedName) into ch_computeMatrix_bedname
         script:
         
@@ -308,7 +308,7 @@ if(params.deeptools_analyses){
             -m ${BedDTlength} \
             --skipZeros \
             -p ${task.cpus} \
-            -o dt_ComputeMatrix.${BedName}.gz
+            -o ${params.deeptools_HM_prefix}.Matrix.${BedName}.gz
             """
                 
         else
@@ -320,7 +320,7 @@ if(params.deeptools_analyses){
             -a ${BedExtLengthRight} \
             --skipZeros \
             -p ${task.cpus} \
-            -o dt_ComputeMatrix.${BedName}.gz
+            -o ${params.deeptools_HM_prefix}.Matrix.${BedName}.gz
             """
     }
 
@@ -341,20 +341,20 @@ if(params.deeptools_analyses){
         val(Labels) from ch_dt_labels_plotHeatmap
         val(BedName) from ch_computeMatrix_bedname
         output:
-        file("Heatmap.dt_PlotHeatmap.${BedName}.pdf")
+        file("${params.deeptools_HM_prefix}.${BedName}.pdf")
         
         script:
         """
         plotHeatmap \
         --matrixFile ${Matrix} \
-        -o Heatmap.dt_PlotHeatmap.${BedName}.pdf \
+        -o ${params.deeptools_HM_prefix}.${BedName}.pdf \
         --startLabel 'st' \
         --endLabel 'end' \
         --refPointLabel 0 \
         --regionsLabel '' \
-        --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
-        --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-        --labelRotation ${params.deeptools_labelRotation} \
+        --heatmapHeight ${params.deeptools_HM_heatmapHeight} ${params.deeptools_HM_options} \
+        --averageTypeSummaryPlot ${params.deeptools_HM_TypeSummaryPlot} \
+        --labelRotation ${params.deeptools_HM_labelRotation} \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """
@@ -377,8 +377,8 @@ if(params.deeptools_analyses){
         file(Files) from ch_dt_files_groupcomputeMatrix
         val(Labels) from ch_dt_labels_groupHeatmap
         output:
-        file("dt_ComputeMatrix.Group.${BedName}.gz")//the computed matrix
-        file("Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf")//the heatmap
+        file("${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz")//the computed matrix
+        file("${params.deeptools_HM_prefix}.Group.${BedName}.pdf")//the heatmap
         //val(BedName) into ch_computeMatrix_bedname
         
         when:
@@ -394,17 +394,17 @@ if(params.deeptools_analyses){
             -m ${BedDTlength} \
             --skipZeros \
             -p ${task.cpus} \
-            -o dt_ComputeMatrix.Group.${BedName}.gz
+            -o ${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz
 
             plotHeatmap \
-            --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
-            -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+            --matrixFile ${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz \
+            -o ${params.deeptools_HM_prefix}.Group.${BedName}.pdf \
             --startLabel 'start' \
             --endLabel 'end' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
-            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-            --labelRotation ${params.deeptools_labelRotation} \
+            --heatmapHeight ${params.deeptools_HM_heatmapHeight} ${params.deeptools_HM_options} \
+            --averageTypeSummaryPlot ${params.deeptools_HM_TypeSummaryPlot} \
+            --labelRotation ${params.deeptools_HM_labelRotation} \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
             """
@@ -418,29 +418,29 @@ if(params.deeptools_analyses){
             -a ${BedExtLengthRight} \
             --skipZeros \
             -p ${task.cpus} \
-            -o dt_ComputeMatrix.Group.${BedName}.gz
+            -o ${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz
             
             plotHeatmap \
-            --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
-            -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+            --matrixFile ${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz \
+            -o ${params.deeptools_HM_prefix}.Group.${BedName}.pdf \
             --startLabel '-${BedExtLengthLeft}' \
             --endLabel '${BedExtLengthRight}' \
             --refPointLabel 0 \
-            --heatmapHeight ${params.deeptools_heatmapHeight} ${params.deeptools_Heatmap_options} \
-            --averageTypeSummaryPlot ${params.deeptools_TypeSummaryPlot} \
-            --labelRotation ${params.deeptools_labelRotation} \
+            --heatmapHeight ${params.deeptools_HM_heatmapHeight} ${params.deeptools_HM_options} \
+            --averageTypeSummaryPlot ${params.deeptools_HM_TypeSummaryPlot} \
+            --labelRotation ${params.deeptools_HM_labelRotation} \
             --xAxisLabel ${BedName} \
             --samplesLabel ${Labels.join(' ')}
             """
         }
         /*"""
         plotHeatmap \
-        --matrixFile dt_ComputeMatrix.Group.${BedName}.gz \
-        -o Heatmap.dt_PlotHeatmap.Group.${BedName}.pdf \
+        --matrixFile ${params.deeptools_HM_prefix}.Matrix.Group.${BedName}.gz \
+        -o ${params.deeptools_HM_prefix}.Group.${BedName}.pdf \
         --startLabel '-${BedExtLengthLeft}' \
         --endLabel '${BedExtLengthRight}' \
         --refPointLabel 0 \
-        --labelRotation ${params.deeptools_labelRotation} ${params.deeptools_Heatmap_options} \
+        --labelRotation ${params.deeptools_HM_labelRotation} ${params.deeptools_HM_options} \
         --xAxisLabel ${BedName} \
         --samplesLabel ${Labels.join(' ')}
         """*/
