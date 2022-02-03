@@ -620,7 +620,7 @@ OK    - Gather all avg density in one file per bed
             if(ext=='true'){ext=TRUE}
             extLL=${BedExtLengthLeft};extLR=${BedExtLengthRight};
             extVL=${BedExtValLeft};extVR=${BedExtValRight}; 
-            t=as.list(read.table('temp_file', stringsAsFactor=FALSE, header=TRUE))
+            t=as.list(read.table('temp_file', stringsAsFactor=FALSE, header=FALSE))
             names(t)=c('Q_id', 'Strand', 'PerBP')
             t[['Splt_PerBP']]=lapply(as.character(t[['PerBP']]), function(x) as.numeric(strsplit(x,';')[[1]]))
             for(k in 1:length(t[['Strand']])){ 
