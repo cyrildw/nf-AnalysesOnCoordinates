@@ -541,8 +541,8 @@ OK    - Gather all avg density in one file per bed
         
         script:
         """
-        get_tag_density -f ${LibBW} ${BedFile} | awk '{for(i=1;i<=8;i++) printf \$i"\\t"; print ""}' - > ${LibName}.${BedName}.tagdensity_output
-        grep -v "#" ${LibName}.${BedName}.tagdensity_output | awk '{ print \$1"\\t"\$2"\\t"\$3"\\t"\$4"\\t"\$8"\\t"\$6 }' > ${LibName}.${BedName}.avgdensity.bed
+        get_tag_density -f ${LibBW} ${BedFile} | awk '{for(i=1;i<=8;i++) printf \$i"\\t"; print ""}' - | gzip - > ${LibName}.${BedName}.tagdensity_output
+        gzip -dkc ${LibName}.${BedName}.tagdensity_output | grep -v "#" - | awk '{ print \$1"\\t"\$2"\\t"\$3"\\t"\$4"\\t"\$8"\\t"\$6 }' > ${LibName}.${BedName}.avgdensity.bed
         """
     }
     ch_avgTD.groupTuple(by: 0).set{ch_grouped_avgTD}
@@ -609,7 +609,7 @@ OK    - Gather all avg density in one file per bed
             
             script:
             """
-            grep -v "#" ${TagDensity} | awk '{ print \$4"\\t"\$6"\\t"\$7 }' > temp_file
+            gzip -dc ${TagDensity} | grep -v "#" - | awk '{ print \$4"\\t"\$6"\\t"\$7 }' > temp_file
             
             echo "R --no-save --no-restore --slave <<RSCRIPT
             R.Version()
@@ -633,7 +633,7 @@ OK    - Gather all avg density in one file per bed
             #write.table(x=t_scaled, file='${LibName}.${BedName}.R', quote=FALSE, row.names=FALSE, col.names=TRUE, sep="\t")
             RSCRIPT
             " > r_file_2_run.R
-            bash r_file_2_run.R
+            bash r_file_2_run.R && rm temp_file
             """
         }
         ch_scaled_R.groupTuple(by: 0).set{ch_grouped_scaled_R}
