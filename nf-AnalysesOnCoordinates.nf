@@ -603,7 +603,7 @@ OK    - Gather all avg density in one file per bed
             tuple file(R_function), file(TagDensity) ,LibName, BedName, BedExtLengthLeft, BedExtLengthRight, BedRFinalLength, BedExtension, BedExtValLeft, BedExtValRight from ch_R_rfunc_toScale
             
             output:
-            file(temp_file)
+            //file(temp_file)
             file("r_file_2_run.R")
             tuple BedName, LibName, file("${LibName}.${BedName}.R") into ch_scaled_R
             
